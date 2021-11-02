@@ -249,3 +249,47 @@ class User(http.Controller):
     def hello(self):
         return {'status': 200, 'message': 'Hello API APP'}
 
+    # /hr_app/api/v1/user/register_basic
+    @http.route('/hr_app/api/' + version + '/user/register_basic', auth="public", methods=['POST'], csrf=False, type='json', cors="*")
+    def post_api_method(self, **kw):
+        try:
+            data = {
+                "status": "",
+                "message": "",
+            }
+            data_register = {
+                'name': request.jsonrequest.get('name'),
+                'login': request.jsonrequest.get('login'),
+            }
+            new_user = http.request.env['res.users'].sudo().create(data_register)
+            if new_user:
+                data['status'] = 200
+                data['message'] = 'Usuario creado'
+            else:
+                data['status'] = 404
+                data['message'] = 'No existe usuario'
+        except Exception as e:
+            raise Exception(e)
+        return str(data)
+
+    # /hr_app/api/v1/user/exist
+    @http.route('/hr_app/api/' + version + '/user/exist', auth="public", methods=['GET'], csrf=False, type='json', cors="*")
+    def get_user_exist(self, **kw):
+        try:
+            data = {
+                "status": "",
+                "message": "",
+            }
+            email = request.params['login']
+            query = [('login', '=', email), ('active', '=', True), ('login', 'not like', 'admin')]
+            get_user = http.request.env["res.users"].sudo().search(query)
+            if not get_user:
+                data['status'] = 404
+                data['message'] = 'No existe usuario'
+                return data
+            else:
+                data['status'] = 200
+                data['message'] = 'Usuario recuperado correctamente'
+        except Exception as e:
+            raise Exception(e)
+        return data
