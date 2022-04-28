@@ -1,0 +1,650 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record model="ir.module.category" id="module_helpdesk_category">
+            <field name="name">Helpdesk</field>
+            <field name="description">Helps you handle your helpdesk security.</field>
+            <field name="sequence">9</field>
+        </record>
+    </data>
+    <data noupdate="1">
+        <record id="cross_ticket_00" model="cross.ticket">
+            <field name="type_urgency">0</field>
+            <field name="type_impact">0</field>
+            <field name="cross_impact">3</field>
+        </record>
+        <record id="cross_ticket_01" model="cross.ticket">
+            <field name="type_urgency">0</field>
+            <field name="type_impact">1</field>
+            <field name="cross_impact">3</field>
+        </record>
+        <record id="cross_ticket_02" model="cross.ticket">
+            <field name="type_urgency">0</field>
+            <field name="type_impact">2</field>
+            <field name="cross_impact">2</field>
+        </record>
+        <record id="cross_ticket_03" model="cross.ticket">
+            <field name="type_urgency">0</field>
+            <field name="type_impact">3</field>
+            <field name="cross_impact">2</field>
+        </record>
+        <record id="cross_ticket_04" model="cross.ticket">
+            <field name="type_urgency">1</field>
+            <field name="type_impact">0</field>
+            <field name="cross_impact">3</field>
+        </record>
+        <record id="cross_ticket_05" model="cross.ticket">
+            <field name="type_urgency">1</field>
+            <field name="type_impact">1</field>
+            <field name="cross_impact">2</field>
+        </record>
+        <record id="cross_ticket_06" model="cross.ticket">
+            <field name="type_urgency">1</field>
+            <field name="type_impact">2</field>
+            <field name="cross_impact">1</field>
+        </record>
+        <record id="cross_ticket_07" model="cross.ticket">
+            <field name="type_urgency">1</field>
+            <field name="type_impact">3</field>
+            <field name="cross_impact">1</field>
+        </record>
+        <record id="cross_ticket_08" model="cross.ticket">
+            <field name="type_urgency">2</field>
+            <field name="type_impact">0</field>
+            <field name="cross_impact">2</field>
+        </record>
+        <record id="cross_ticket_09" model="cross.ticket">
+            <field name="type_urgency">2</field>
+            <field name="type_impact">1</field>
+            <field name="cross_impact">1</field>
+        </record>
+        <record id="cross_ticket_10" model="cross.ticket">
+            <field name="type_urgency">2</field>
+            <field name="type_impact">2</field>
+            <field name="cross_impact">1</field>
+        </record>
+        <record id="cross_ticket_11" model="cross.ticket">
+            <field name="type_urgency">2</field>
+            <field name="type_impact">3</field>
+            <field name="cross_impact">0</field>
+        </record>
+        <record id="cross_ticket_12" model="cross.ticket">
+            <field name="type_urgency">3</field>
+            <field name="type_impact">0</field>
+            <field name="cross_impact">2</field>
+        </record>
+        <record id="cross_ticket_13" model="cross.ticket">
+            <field name="type_urgency">3</field>
+            <field name="type_impact">1</field>
+            <field name="cross_impact">1</field>
+        </record>
+        <record id="cross_ticket_14" model="cross.ticket">
+            <field name="type_urgency">3</field>
+            <field name="type_impact">2</field>
+            <field name="cross_impact">0</field>
+        </record>
+        <record id="cross_ticket_15" model="cross.ticket">
+            <field name="type_urgency">3</field>
+            <field name="type_impact">3</field>
+            <field name="cross_impact">0</field>
+        </record>
+
+        <!--Email template -->
+        <record id="closed_ticket_template" model="mail.template">
+            <field name="name">Helpdesk Closed Ticket Notification Email</field>
+            <field name="model_id" ref="helpdesk_pro.model_helpdesk_ticket" />
+            <field name="email_from">${object.company_id.partner_id.email}</field>
+            <field
+                name="email_cc"
+            >${not object.partner_id and object.partner_email or ''|safe},</field>
+            <field name="subject">The ticket ${object.number} has been closed.</field>
+            <field name="partner_to">${object.partner_id.id}</field>
+            <field name="auto_delete" eval="False" />
+            <field name="lang">${object.partner_id.lang}</field>
+            <field
+                name="body_html"
+            ><![CDATA[<html>
+                <head></head>
+                <body style="margin: 0; padding: 0;">
+                <table border="0" width="100%" cellpadding="0" bgcolor="#ededed" style="padding: 20px; background-color: #ededed; border-collapse:separate;">
+                    <tbody>
+                      <!-- HEADER -->
+                      <tr>
+                        <td align="center" style="min-width: 590px;">
+                          <table width="590" border="0" cellpadding="0" bgcolor="#875A7B" style="min-width: 590px; background-color: rgb(135,90,123); padding: 20px; border-collapse:separate;">
+                            <tr>
+                              <td valign="middle" align="right">
+                                <img src="/logo.png?company=${object.company_id}" style="padding: 0px; margin: 0px; height: auto; width: 80px;" alt="${object.company_id.name}">
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <!-- CONTENT -->
+                      <tr>
+                        <td align="center" style="min-width: 590px;">
+                          <table width="590" border="0" cellpadding="0" bgcolor="#ffffff" style="min-width: 590px; background-color: rgb(255, 255, 255); padding: 20px; border-collapse:separate;">
+                            <tbody>
+                              <td valign="top" style="font-family:Arial,Helvetica,sans-serif; color: #555; font-size: 14px;">
+                                <p>Hello ${object.user_id.name},</p>
+                                <p>The ticket ${object.number} has been closed.</p>
+                              </td>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                      <!-- FOOTER -->
+                      <tr>
+                        <td align="center" style="min-width: 590px;">
+                          <table width="590" border="0" cellpadding="0" bgcolor="#875A7B" style="min-width: 590px; background-color: rgb(135,90,123); padding: 20px; border-collapse:separate;">
+                            <tr>
+                              <td valign="middle" align="left" style="color: #fff; padding-top: 10px; padding-bottom: 10px; font-size: 12px;">
+                                ${object.company_id.phone}
+                              </td>
+                              <td valign="middle" align="left" style="color: #fff; padding-top: 10px; padding-bottom: 10px; font-size: 12px;">
+                                ${object.company_id.email}
+                              </td>
+                              <td valign="middle" align="left" style="color: #fff; padding-top: 10px; padding-bottom: 10px; font-size: 12px;">
+                                ${object.company_id.website}
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </tbody>
+                </table>
+                </body>
+                </html>
+            ]]></field>
+        </record>
+
+        <record id="changed_stage_template" model="mail.template">
+            <field name="name">Helpdesk Changed Stage notification Email</field>
+            <field name="model_id" ref="helpdesk_pro.model_helpdesk_ticket" />
+            <field name="email_from">${object.company_id.partner_id.email}</field>
+            <field
+                name="email_cc"
+            >${not object.partner_id and object.partner_email or ''|safe},</field>
+            <field name="subject">The ticket ${object.number} stage has changed.</field>
+            <field name="partner_to">${object.partner_id.id}</field>
+            <field name="auto_delete" eval="False" />
+            <field name="lang">${object.partner_id.lang}</field>
+            <field
+                name="body_html"
+            ><![CDATA[<html>
+                <head></head>
+                <body style="margin: 0; padding: 0;">
+                <table border="0" width="100%" cellpadding="0" bgcolor="#ededed" style="padding: 20px; background-color: #ededed; border-collapse:separate;">
+                    <tbody>
+                      <!-- HEADER -->
+                      <tr>
+                        <td align="center" style="min-width: 590px;">
+                          <table width="590" border="0" cellpadding="0" bgcolor="#875A7B" style="min-width: 590px; background-color: rgb(135,90,123); padding: 20px; border-collapse:separate;">
+                            <tr>
+                              <td valign="middle" align="right">
+                                <img src="/logo.png?company=${object.company_id}" style="padding: 0px; margin: 0px; height: auto; width: 80px;">
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <!-- CONTENT -->
+                      <tr>
+                        <td align="center" style="min-width: 590px;">
+                          <table width="590" border="0" cellpadding="0" bgcolor="#ffffff" style="min-width: 590px; background-color: rgb(255, 255, 255); padding: 20px; border-collapse:separate;">
+                            <tbody>
+                              <td valign="top" style="font-family:Arial,Helvetica,sans-serif; color: #555; font-size: 14px;">
+                                <p>Hello ${object.user_id.name},</p>
+                                <p>The ticket ${object.number} stage has changed to ${object.stage_id.name}.</p>
+                              </td>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                      <!-- FOOTER -->
+                      <tr>
+                        <td align="center" style="min-width: 590px;">
+                          <table width="590" border="0" cellpadding="0" bgcolor="#875A7B" style="min-width: 590px; background-color: rgb(135,90,123); padding: 20px; border-collapse:separate;">
+                            <tr>
+                              <td valign="middle" align="left" style="color: #fff; padding-top: 10px; padding-bottom: 10px; font-size: 12px;">
+                                ${object.company_id.phone}
+                              </td>
+                              <td valign="middle" align="left" style="color: #fff; padding-top: 10px; padding-bottom: 10px; font-size: 12px;">
+                                ${object.company_id.email}
+                              </td>
+                              <td valign="middle" align="left" style="color: #fff; padding-top: 10px; padding-bottom: 10px; font-size: 12px;">
+                                ${object.company_id.website}
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </tbody>
+                </table>
+                </body>
+                </html>
+            ]]>
+            </field>
+        </record>
+
+        <record id="new_ticket_request_email_template" model="mail.template">
+            <field name="name">Ticket: Reception Acknowledgment</field>
+            <field name="model_id" ref="helpdesk_pro.model_helpdesk_ticket"/>
+            <field name="subject">${object.display_name}</field>
+            <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
+            <field name="email_to">{{ (object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') }}</field>
+            <field name="body_html" type="xml">
+                <div>
+                    Dear ${object.sudo().partner_id.name or 'Madam/Sir'},<br /><br />
+                    Your request
+                    % if object.get_portal_url():
+                    <a href="/my/ticket/${object.id}/${object.access_token}">${object.name}</a>
+                    % endif
+                    has been received and is being reviewed by our ${object.team_id.name or ''} team.
+                    The reference of your ticket is ${object.id}.<br /><br />
+
+                    <div style="text-align: center; margin: 16px 0px 16px 0px;">
+                        <a style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;" href="${object.get_portal_url()}">View the ticket</a><br/>
+                    </div>
+
+                    To add additional comments, reply to this email.<br/><br/>
+
+                    Thank you,<br/><br/>
+                    ${object.team_id.name or 'Helpdesk'} Team.
+                </div>
+            </field>
+            <field name="lang">${object.partner_id.lang or object.user_id.lang or user.lang}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+        <record id="waiting_ticket_request_email_template" model="mail.template">
+            <field name="name">Ticket: Waiting actions</field>
+            <field name="model_id" ref="helpdesk_pro.model_helpdesk_ticket"/>
+            <field name="subject">Waiting actions</field>
+            <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
+            <field name="email_to">{{ (object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') }}</field>
+            <field name="body_html" type="xml">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px;">
+                        This automatic message informs you that the technician in charge of your ticket (reference <t t-out="object.id or ''" contenteditable="false" data-oe-t-inline="true">15</t>) is waiting for some action from you.<br/>
+                        Access your personal area of our portal and check what is required by the technician.<br/>
+                        If you have any further questions or comments, do not hesitate to contact us through your personal area<br/><br/>
+                        Thank you for your cooperation.<br/>
+                        Kind regards,<br/><br/>
+                        <t t-out="object.team_id.name or 'Helpdesk'" contenteditable="false" data-oe-t-inline="true">Helpdesk</t> Team.
+                    </p>
+                </div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang or object.user_id.lang or user.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+        <record id="process_ticket_request_email_template" model="mail.template">
+            <field name="name">Ticket: In Progress</field>
+            <field name="model_id" ref="helpdesk_pro.model_helpdesk_ticket"/>
+            <field name="subject">In Progress</field>
+            <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
+            <field name="email_to">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
+            <field name="body_html" type="html">
+                <div>
+                    Dear <t t-out="object.user_id.name or ''"></t>,<br/><br/>
+                    The ticket
+                    <t t-if="object.get_portal_url()" data-oe-t-group="0" data-oe-t-group-active="true">
+                        <a t-attf-href="/my/ticket/{{ object.id }}/{{ object.access_token }}" t-out="object.name or ''" contenteditable="false"></a>
+                    </t>
+                    to which it has been assigned is operational on the Support platform.<br/><br/>
+                    Kind regards,<br/><br/>
+                    <t t-out="object.team_id.name or 'Helpdesk'" contenteditable="false" data-oe-t-inline="true">Helpdesk</t>.
+                </div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang or object.user_id.lang or user.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+        <!-- Sequence -->
+        <record id="helpdesk_ticket_sequence" model="ir.sequence">
+            <field name="name">Helpdesk Ticket Sequence</field>
+            <field name="code">helpdesk.ticket.sequence</field>
+            <field name="prefix">TICK</field>
+            <field name="padding">5</field>
+            <field name="company_id" />
+        </record>
+        <!-- Stages -->
+
+        <record id="helpdesk_ticket_stage_new" model="helpdesk.ticket.stage">
+            <field name="sequence">1</field>
+            <field name="name">New</field>
+            <field name="unattended">True</field>
+            <field name="closed">False</field>
+            <field name="company_id"/>
+            <field name="key_stage">new</field>
+        </record>
+
+        <record id="helpdesk_ticket_stage_in_progress" model="helpdesk.ticket.stage">
+            <field name="sequence">2</field>
+            <field name="name">In Progress</field>
+            <field name="unattended">False</field>
+            <field name="closed">False</field>
+            <field name="company_id"/>
+            <field name="key_stage">pro</field>
+            <field name="mail_template_id" ref="helpdesk_pro.process_ticket_request_email_template"/>
+        </record>
+        <record id="helpdesk_ticket_stage_awaiting" model="helpdesk.ticket.stage">
+            <field name="sequence">3</field>
+            <field name="name">Waiting</field>
+            <field name="unattended">False</field>
+            <field name="closed">False</field>
+            <field name="company_id"/>
+            <field name="key_stage">wai</field>
+            <field name="mail_template_id" ref="helpdesk_pro.waiting_ticket_request_email_template"/>
+        </record>
+        <record id="helpdesk_ticket_stage_done" model="helpdesk.ticket.stage">
+            <field name="sequence">4</field>
+            <field name="name">Done</field>
+            <field name="unattended">False</field>
+            <field name="closed">True</field>
+            <field name="fold">True</field>
+            <field name="key_stage">don</field>
+            <field name="mail_template_id" ref="helpdesk_pro.closed_ticket_template" />
+            <field name="company_id"/>
+        </record>
+        <record id="helpdesk_ticket_stage_cancelled" model="helpdesk.ticket.stage">
+            <field name="sequence">5</field>
+            <field name="name">Cancelled</field>
+            <field name="unattended">False</field>
+            <field name="closed">True</field>
+            <field name="fold">True</field>
+            <field name="key_stage">can</field>
+            <field name="mail_template_id" ref="helpdesk_pro.closed_ticket_template" />
+            <field name="company_id"/>
+        </record>
+
+        <!-- Channels -->
+        <record id="helpdesk_ticket_channel_web" model="helpdesk.ticket.channel">
+            <field name="name">Web</field>
+        </record>
+        <record id="helpdesk_ticket_channel_email" model="helpdesk.ticket.channel">
+            <field name="name">Email</field>
+        </record>
+        <record id="helpdesk_ticket_channel_phone" model="helpdesk.ticket.channel">
+            <field name="name">Phone</field>
+        </record>
+        <record id="helpdesk_ticket_channel_other" model="helpdesk.ticket.channel">
+            <field name="name">Other</field>
+        </record>
+
+        <record id="type_bug" model="helpdesk.ticket.category">
+            <field name="name">Bug</field>
+        </record>
+        <record id="type_question" model="helpdesk.ticket.category">
+            <field name="name">Question</field>
+        </record>
+        <record id="type_issue" model="helpdesk.ticket.category">
+            <field name="name">Suggestion</field>
+        </record>
+
+        <!--default alias for leads-->
+        <record id="mail_alias_lead_info_helpdesk" model="mail.alias">
+            <field name="alias_name">help</field>
+            <field name="alias_model_id" ref="model_helpdesk_ticket" />
+            <field name="alias_user_id" ref="base.user_admin" />
+            <field name="alias_parent_model_id" ref="model_helpdesk_ticket_team" />
+        </record>
+
+        <record id="seq_detail_waiting_days" model="ir.sequence">
+            <field name="name">Detail waiting days</field>
+            <field name="code">detail.waiting.days</field>
+            <field name="prefix">CH/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_helpdesk_helpdesk_team1" model="helpdesk.ticket.team">
+            <field name="name">Support Team</field>
+        </record>
+
+        <record id="seq_helpdesk_ticket_urgency1" model="helpdesk.ticket.urgency">
+            <field name="name">Low priority</field>
+            <field name="key_name">3</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_urgency2" model="helpdesk.ticket.urgency">
+            <field name="name">Medium priority</field>
+            <field name="key_name">2</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_urgency3" model="helpdesk.ticket.urgency">
+            <field name="name">High priority</field>
+            <field name="key_name">1</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_urgency4" model="helpdesk.ticket.urgency">
+            <field name="name">Critical</field>
+            <field name="key_name">0</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <record id="seq_helpdesk_ticket_environment1" model="helpdesk.ticket.environment">
+            <field name="name">Testing</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_environment2" model="helpdesk.ticket.environment">
+            <field name="name">Production</field>
+            <field name="active" eval="True"/>
+        </record>
+
+
+        <record id="seq_helpdesk_ticket_module0" model="helpdesk.ticket.module">
+            <field name="name">-</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module1" model="helpdesk.ticket.module">
+            <field name="name">Accounting</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module2" model="helpdesk.ticket.module">
+            <field name="name">Appraisal</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module3" model="helpdesk.ticket.module">
+            <field name="name">Approvals</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module4" model="helpdesk.ticket.module">
+            <field name="name">Attendances</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module5" model="helpdesk.ticket.module">
+            <field name="name">CRM</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module6" model="helpdesk.ticket.module">
+            <field name="name">Calendar</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module7" model="helpdesk.ticket.module">
+            <field name="name">Commissions</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module8" model="helpdesk.ticket.module">
+            <field name="name">Contracts</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module9" model="helpdesk.ticket.module">
+            <field name="name">Delivery</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module10" model="helpdesk.ticket.module">
+            <field name="name">Discuss</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module11" model="helpdesk.ticket.module">
+            <field name="name">Documents</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module12" model="helpdesk.ticket.module">
+            <field name="name">Email Marketing</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module13" model="helpdesk.ticket.module">
+            <field name="name">Employees</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module14" model="helpdesk.ticket.module">
+            <field name="name">Events</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module15" model="helpdesk.ticket.module">
+            <field name="name">Expenses</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module16" model="helpdesk.ticket.module">
+            <field name="name">Extra Tools</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module17" model="helpdesk.ticket.module">
+            <field name="name">Field Service</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module18" model="helpdesk.ticket.module">
+            <field name="name">Fleet</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module19" model="helpdesk.ticket.module">
+            <field name="name">Helpdesk</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module20" model="helpdesk.ticket.module">
+            <field name="name">Human Resources</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module21" model="helpdesk.ticket.module">
+            <field name="name">IoT</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module22" model="helpdesk.ticket.module">
+            <field name="name">Inventory</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module23" model="helpdesk.ticket.module">
+            <field name="name">Invoicing</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module24" model="helpdesk.ticket.module">
+            <field name="name">Live Chat</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module25" model="helpdesk.ticket.module">
+            <field name="name">Lunch</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module26" model="helpdesk.ticket.module">
+            <field name="name">Maintenance</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module27" model="helpdesk.ticket.module">
+            <field name="name">Manufacturing</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module28" model="helpdesk.ticket.module">
+            <field name="name">Marketing Automatic</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module29" model="helpdesk.ticket.module">
+            <field name="name">Notes</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module30" model="helpdesk.ticket.module">
+            <field name="name">Payment</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module31" model="helpdesk.ticket.module">
+            <field name="name">Payroll</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module32" model="helpdesk.ticket.module">
+            <field name="name">Planning</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module33" model="helpdesk.ticket.module">
+            <field name="name">PoS</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module34" model="helpdesk.ticket.module">
+            <field name="name">PLM</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module35" model="helpdesk.ticket.module">
+            <field name="name">Project</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module36" model="helpdesk.ticket.module">
+            <field name="name">Purchase</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module37" model="helpdesk.ticket.module">
+            <field name="name">Quality</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module38" model="helpdesk.ticket.module">
+            <field name="name">Recruitment</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module39" model="helpdesk.ticket.module">
+            <field name="name">Sale</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module40" model="helpdesk.ticket.module">
+            <field name="name">Sign</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module41" model="helpdesk.ticket.module">
+            <field name="name">Social Marketing</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module42" model="helpdesk.ticket.module">
+            <field name="name">Studio</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module43" model="helpdesk.ticket.module">
+            <field name="name">Subscriptions</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module44" model="helpdesk.ticket.module">
+            <field name="name">Surveys</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module45" model="helpdesk.ticket.module">
+            <field name="name">Technical</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module46" model="helpdesk.ticket.module">
+            <field name="name">Time Off</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module47" model="helpdesk.ticket.module">
+            <field name="name">Time sheets</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module48" model="helpdesk.ticket.module">
+            <field name="name">VOIP</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module49" model="helpdesk.ticket.module">
+            <field name="name">Warehouse</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module50" model="helpdesk.ticket.module">
+            <field name="name">Website</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module51" model="helpdesk.ticket.module">
+            <field name="name">eCommerce</field>
+            <field name="active" eval="True"/>
+        </record>
+        <record id="seq_helpdesk_ticket_module52" model="helpdesk.ticket.module">
+            <field name="name">eLearning</field>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

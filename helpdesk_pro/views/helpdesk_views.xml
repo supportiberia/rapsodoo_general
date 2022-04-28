@@ -1,0 +1,332 @@
+<?xml version="1.0"?>
+<odoo>
+
+    <record id="helpdesk_ticket_view_form" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.form</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <form string="Helpdesk Ticket">
+                <header>
+                    <button string="Assign to me" name="assign_to_me" type="object" attrs="{'invisible' : [('user_id', '!=', False)]}"/>
+                    <button name="assign_ticket_working" string="Working" type="object" class="oe_highlight" attrs="{'invisible': [('check_working', '=', True)]}"/>
+                    <button name="assign_ticket_waiting" string="Waiting" type="object" class="oe_highlight" attrs="{'invisible': [('check_waiting', '=', True)]}"/>
+                    <button name="assign_ticket_resolved" string="Resolved" type="object" class="oe_highlight" attrs="{'invisible': [('check_resolved', '=', True)]}"/>
+                    <button name="assign_ticket_cancel" string="Cancel" type="object" attrs="{'invisible': [('check_cancel', '=', True)]}"/>
+                    <field name="check_working" invisible="1"/>
+                    <field name="check_waiting" invisible="1"/>
+                    <field name="check_resolved" invisible="1"/>
+                    <field name="check_cancel" invisible="1"/>
+                    <field name="check_task" invisible="1"/>
+                    <field name="stage_id" widget="statusbar" options="{'fold_field': 'fold'}"/>
+                    <field name="check_email" invisible="1"/>
+                    <div class="alert alert-warning" role="alert" attrs="{'invisible': [('check_email', '!=', True)]}">
+                      Remember to check the "chatter" located on the right side, to be aware of news <span class="o_vat_label"> about the Client</span>.
+                    </div>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="action_open_task" icon="fa-tasks" attrs="{'invisible': [('project_count', '=', 0)]}">
+                            <field name="task_count" widget="statinfo" string="Tasks"/>
+                        </button>
+                        <button class="oe_stat_button" type="object" name="action_open_project" icon="fa-puzzle-piece">
+                            <field name="project_count" widget="statinfo" string="Projects"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
+                    <field name="kanban_state" widget="state_selection"/>
+                    <div class="oe_title">
+                        <h1><field name="number" readonly="1" required="True" class="field_name"/></h1>
+                        <h2 class="o_row"><field name="name" class="field_name" placeholder="Subject..."/></h2>
+                    </div>
+                    <group name="main">
+                        <group name="first">
+                            <field name="active" invisible="1"/>
+                            <field name="team_id" options='{"always_reload": True, "no_create": True}' required="True"/>
+                            <field name="user_ids" readonly="1" invisible="1" />
+                            <field name="user_id" domain="[('share', '=', False)]" options='{"always_reload": True, "no_create": True}' widget="many2one_avatar_user"/>
+                            <field name="category_id" options="{'no_create': True}" required="True"/>
+                            <field name="type_urgency" required="True" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="type_impact" required="True"/>
+                            <field name="priority" widget="priority" readonly="True"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="resource_calendar_id" required="1"/>
+                            <field name="project_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]"/>
+                            <field name="task_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]"/>
+                            <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
+                        </group>
+                        <group name="second">
+                            <field name="client_id" options="{'no_create': True}" domain="[('parent_id', '=', False)]"/>
+                            <field name="partner_id" options="{'no_create': True}" domain="[('parent_id', '!=', False)]" required="True"/>
+                            <field name="partner_name" attrs="{'invisible': [('partner_id', '!=', False)]}"/>
+                            <field name="partner_email"/>
+                            <field name="channel_id" options="{'no_create': True}"/>
+                            <label for="entry_date" string="Dates"/>
+                            <div class="w-100">
+                                <div class="o_row">
+                                    <field name="entry_date" widget="daterange" options="{&quot;related_end_date&quot;: &quot;end_date&quot;}" readonly="True"/>
+                                    <i class="fa fa-long-arrow-right mx-2 oe_edit_only" aria-label="Arrow icon" title="Arrow"/>
+                                    <i class="fa fa-long-arrow-right mx-2 oe_read_only" aria-label="Arrow icon" title="Arrow" attrs="{'invisible': [('entry_date', '=', False), ('end_date', '=', False)]}"/>
+                                    <field name="end_date" widget="daterange" options="{&quot;related_start_date&quot;: &quot;entry_date&quot;}" readonly="True"/>
+                                </div>
+                            </div>
+                            <label for="count_day" string="Duration (days)"/>
+                            <div class="w-100">
+                                <div class="o_row">
+                                    <field name="count_day"/>
+                                    <button name="action_open_detail_days" class="float-right" icon="fa-calendar" type="object" string="Details"></button>
+                                </div>
+                            </div>
+                            <field name="count_real_day"/>
+                            <field name="dedicated_time"/>
+                        </group>
+                        <group name="f_addon" string="Data technical">
+                            <field name="modules_id" required="True" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="environment" required="True" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="check_01_name"  invisible="1" />
+                            <field name="check_01"  widget="binary" filename="check_01_name"/>
+                        </group>
+                        <group name="s_addon" string="Other data">
+                            <field name="url_link" widget="url" placeholder="e.g. https://www.odoo.com"/>
+                            <field name="git_link" widget="url" placeholder="e.g. https://www.github.com"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Information" name="description">
+                            <h6>Description</h6>
+                            <field name="description" class="field_description" placeholder="Description of the ticket..."/>
+                            <h6>Solution details</h6>
+                            <field name="solution" class="field_description" placeholder="Description of the solution..."/>
+                        </page>
+                        <page string="Other Information" name="other_info">
+                            <group>
+                                <field name="last_stage_update" readonly="1"/>
+                                <field name="assigned_date" readonly="1"/>
+                                <field name="closed_date" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients', 'open_attachments': True}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="helpdesk_ticket_view_tree" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.view.tree</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <tree string="Helpdesk Ticket" sample="1">
+                <field name="number"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="client_id" optional="hide"/>
+                <field name="user_id"/>
+                <field name="modules_id"/>
+                <field name="priority" widget="priority" readonly="True"/>
+                <field name="activity_ids" widget="list_activity" optional="show"/>
+                <field name="entry_date" widget="date"/>
+                <field name="count_day"/>
+                <field name="count_real_day" invisible="True"/>
+                <field name="dedicated_time"/>
+                <field name="last_stage_update" optional="hide"/>
+                <field name="stage_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="helpdesk_ticket_view_search" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.view.search</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="number" />
+                <field name="partner_id" />
+                <field name="user_id" />
+                <field name="name" />
+                <field name="tag_ids" />
+                <field name="stage_id" />
+                <filter string="Unassigned" name="unassigned" domain="[('user_id','=',False)]"/>
+                <filter string="Open" name="open" domain="[('closed', '=', False )]"/>
+                <filter string="Unattended" name="unattended" domain="[('unattended', '=', True )]"/>
+                <filter string="High Priority" name="high_priority" domain="[('priority','=','3')]"/>
+                <separator/>
+                <filter string="My Tickets" name="mytickets" domain="[('user_id','=',uid)]"/>
+                <filter string="My Followed Tickets" name="my_followed_tickets" domain="[('message_is_follower', '=', True)]"/>
+                <separator/>
+                <filter name="last_week" string="Last Week" domain="[('create_date','&gt;', (context_today() - datetime.timedelta(weeks=1)).strftime('%%Y-%%m-%%d') )]"/>
+                <separator/>
+                <filter string="My Activities" name="activities_my" domain="[('activity_ids.user_id', '=', uid)]"/>
+                <filter string="Late Activities" name="activities_overdue" domain="[('activity_ids.date_deadline', '&lt;', context_today().strftime('%Y-%m-%d'))]" help="Show all records which has next action date is before today"/>
+                <filter string="Today Activities" name="activities_today" domain="[('activity_ids.date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Future Activities" name="activities_upcoming_all" domain="[('activity_ids.date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Partner" name="group_partner" domain="[]" context="{'group_by':'partner_id'}"/>
+                    <filter string="Team" name="group_team" domain="[]" context="{'group_by':'team_id'}"/>
+                    <filter string="User" name="group_user" domain="[]" context="{'group_by':'user_id'}"/>
+                    <filter string="Stage" name="group_stage" domain="[]" context="{'group_by':'stage_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="helpdesk_ticket_views_pivot" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.view.pivot</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <pivot string="Pivot Analysis" disable_linking="True">
+                <field name="team_id" type="row" />
+                <field name="assigned_date" type="col" />
+            </pivot>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="project_project_inherit_ticket_pro_form">
+        <field name="name">project.project.inherit.ticket.pro.form</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="count_hours" required="True"/>
+                <field name="diff_hours"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- View Form cross.ticket -->
+    <record model="ir.ui.view" id="cross_ticket_form">
+        <field name="name">cross.ticket.form</field>
+        <field name="model">cross.ticket</field>
+        <field name="arch" type="xml">
+            <form string="Cross ticket">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="type_urgency"/>
+                            <field name="type_impact"/>
+                        </group>
+                        <group>
+                            <field name="cross_impact"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- View Tree cross.ticket -->
+    <record model="ir.ui.view" id="cross_ticket_tree">
+        <field name="name">cross.ticket.tree</field>
+        <field name="model">cross.ticket</field>
+        <field name="arch" type="xml">
+            <tree string="Cross ticket">
+                <field name="type_urgency"/>
+                <field name="type_impact"/>
+                <field name="cross_impact"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_cross_ticket" model="ir.actions.act_window">
+        <field name="name">Cross ticket</field>
+        <field name="res_model">cross.ticket</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),
+                      (0, 0, {'view_mode': 'tree', 'view_id': ref('cross_ticket_tree')}),
+                      (0, 0, {'view_mode': 'form', 'view_id': ref('cross_ticket_form')})]"/>
+    </record>
+
+    <record id="helpdesk_ticket_action" model="ir.actions.act_window">
+        <field name="name">Helpdesk Ticket</field>
+        <field name="res_model">helpdesk.ticket</field>
+        <field name="view_mode">tree,form,pivot</field>
+    </record>
+    <record id="helpdesk_ticket_reporting_action" model="ir.actions.act_window">
+        <field name="name">Reporting</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">helpdesk.ticket</field>
+        <field name="view_mode">pivot,graph</field>
+    </record>
+    <record id="helpdesk_ticket_channel_action" model="ir.actions.act_window">
+        <field name="name">Channels</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">helpdesk.ticket.channel</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="helpdesk_ticket_category_action" model="ir.actions.act_window">
+        <field name="name">Ticket type</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">helpdesk.ticket.category</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="helpdesk_ticket_team_action" model="ir.actions.act_window">
+        <field name="name">Teams</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">helpdesk.ticket.team</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="helpdesk_ticket_stage_action" model="ir.actions.act_window">
+        <field name="name">Stages</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">helpdesk.ticket.stage</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="helpdesk_ticket_tag_action" model="ir.actions.act_window">
+        <field name="name">Ticket Tags</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">helpdesk.ticket.tag</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- View Form detail.days -->
+    <record id="detail_days_form" model="ir.ui.view">
+        <field name="name">detail.days.form</field>
+        <field name="model">detail.days</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="report_lines" readonly="True">
+                    <tree>
+                        <field name="name" string="Ref."/>
+                        <field name="entry_date"/>
+                        <field name="end_date"/>
+                        <field name="user_id"/>
+                        <field name="count_day" sum="Total"/>
+                        <field name="ticket_id" invisible="1"/>
+                    </tree>
+                </field>
+                <footer>
+                   <button string="Cancel" class="btn btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="detail_days_wizard_action" model="ir.actions.act_window">
+        <field name="name">See details of days waiting for customer response</field>
+        <field name="res_model">detail.days</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id='support_menu_principal' name='Helpdesk' web_icon="helpdesk_pro,static/description/icon.png" groups="group_helpdesk_user_own">
+<!--        <menuitem name="Dashboard" id="support_menu_item_dashboard" action="helpdesk_ticket_action" sequence="1"/>-->
+        <menuitem name="Tickets" id="support_menu_item_ticket" sequence="2">
+            <menuitem name="Tickets" id="support_menu_item_ticket1" action="helpdesk_ticket_action" sequence="1"/>
+        </menuitem>
+        <menuitem name="Reporting" id="support_menu_item_report" sequence="3">
+            <menuitem name="Tickets" id="support_menu_item_report1" action="helpdesk_ticket_reporting_action" sequence="1"/>
+        </menuitem>
+        <menuitem name="Configuration" id="support_menu_item_setting" sequence="999" groups="group_helpdesk_manager">
+            <menuitem name="Channels" id="support_menu_item_setting1" action="helpdesk_ticket_channel_action" sequence="1"/>
+            <menuitem name="Ticket type" id="support_menu_item_setting2" action="helpdesk_ticket_category_action" sequence="2"/>
+            <menuitem name="Stages" id="support_menu_item_setting3" action="helpdesk_ticket_stage_action" sequence="3"/>
+            <menuitem name="Teams" id="support_menu_item_setting4" action="helpdesk_ticket_team_action" sequence="4"/>
+            <menuitem name="Ticket Tags" id="support_menu_item_setting5" action="helpdesk_ticket_tag_action" sequence="5"/>
+            <menuitem name='Cross ticket' id="support_menu_item_setting6" action="action_cross_ticket" sequence="999"/>
+        </menuitem>
+    </menuitem>
+</odoo>

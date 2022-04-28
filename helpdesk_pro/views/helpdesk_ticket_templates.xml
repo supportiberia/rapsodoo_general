@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <template id="portal_layout" name="Portal layout: ticket menu entry" inherit_id="portal.portal_breadcrumbs" priority="50">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'ticket' or ticket" t-attf-class="breadcrumb-item #{'active ' if not ticket else ''}">
+                <a t-if="ticket" t-attf-href="/my/tickets?{{ keep_query() }}">Tickets</a>
+                <t t-else="">Tickets</t>
+            </li>
+            <li t-if="ticket" class="breadcrumb-item active">
+                <t t-esc="ticket.name" />
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_home" name="Portal My Home : ticket entries" inherit_id="portal.portal_my_home" priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <div class="container mt-4">
+                <div class="row mb16">
+                    <div class="col-md-9">
+                    </div>
+                    <div class="col-md-3" id="right-column">
+                        <t>
+                            <form method="POST" t-attf-action="/new/ticket">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <button name="create_new_ticket" type="action" class="btn btn-primary" style="float: right; margin-right: 0px; margin-top:5px;">New Ticket</button>
+                            </form>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-if="ticket_count" t-call="portal.portal_docs_entry">
+                <t t-set="title">Tickets</t>
+                <t t-set="url" t-value="'/my/tickets'" />
+                <t t-set="count" t-value="ticket_count" />
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_my_tickets" name="My tickets">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <form method="POST" t-attf-action="/new/ticket">
+                <t t-call="portal.portal_searchbar">
+                    <t t-set="title">Tickets</t>
+                </t>
+                <button name="create_new_ticket" type="action" class="btn btn-primary" style="float: right; margin-right: 5px;">New Ticket</button>
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+            </form>
+            <div t-if="not tickets" class="alert alert-info">
+                There are currently no Ticket for your account.
+            </div>
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr t-attf-class="{{'thead-light' if not groupby == 'none' else ''}}">
+                        <th>#</th>
+                        <th class="w-80">Name</th>
+                        <th>By</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Create Date</th>
+                        <th>Last Stage Update</th>
+                        <th t-if="groupby != 'stage'" class="text-center">Stage</th>
+                    </tr>
+                </thead>
+                <t t-foreach="tickets" t-as="ticket">
+                    <tr>
+                        <td class="text-left"><a t-attf-href="/my/ticket/#{ticket.id}"><t t-esc="ticket.number"/></a></td>
+                        <td><t t-esc="ticket.name"/></td>
+                        <td><t t-esc="ticket.partner_id.name"/></td>
+                        <td><t t-esc="ticket.category_id.name"/></td>
+                        <td><t t-esc="ticket.modules_id.name"/></td>
+                        <td><span t-field="ticket.create_date"/></td>
+                        <td><span t-field="ticket.last_stage_update"/></td>
+                        <td t-if="groupby != 'stage'" class="text-center"><span class="badge badge-pill badge-info" t-field="ticket.stage_id.name"/></td>
+                    </tr>
+                </t>
+            </t>
+            <div t-if="pager" class="o_portal_pager text-center">
+                <t t-call="portal.pager"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_helpdesk_ticket_page" name="Ticket Portal Template">
+        <t t-call="portal.portal_layout">
+            <t t-set="wrapwrap_classes" t-value="'o_portal_bg_dark'"/>
+            <t t-set="o_portal_fullwidth_alert" groups="helpdesk_pro.group_helpdesk_manager">
+                <t t-call="portal.portal_back_in_edit_mode">
+                    <t t-set="backend_url" t-value="'/web#model=helpdesk.ticket&amp;id=%s&amp;view_type=form' % (ticket.id)"/>
+                </t>
+            </t>
+            <t t-call="portal.portal_record_layout">
+                <t t-set="card_header">
+                    <div class="row no-gutters">
+                        <div class="col-md">
+                            <h5 class="d-flex mb-1 mb-md-0">
+                                <div class="col-9 text-truncate">
+                                    <span t-field="ticket.name"/>
+                                    <small class="text-muted "> (#<span t-field="ticket.id"/>)</small>
+                                </div>
+                                <div class="col-3 text-right">
+                                    <small class="text-right">Status:</small>
+                                    <span t-field="ticket.stage_id.name" class=" badge badge-pill badge-info" title="Current stage of this ticket"/>
+                                </div>
+                            </h5>
+                        </div>
+                    </div>
+                </t>
+                <t t-set="card_body">
+                    <div class="row">
+                        <strong class="col-lg-2">Date:</strong>
+                        <span class="col-lg-4" t-field="ticket.create_date" t-options='{"widget": "date"}'/>
+                        <strong class="col-lg-2">Type:</strong>
+                        <span class="col-lg-4" t-field="ticket.category_id.name"/>
+                    </div>
+                    <br/>
+                    <div class="row" t-if="ticket.team_id">
+                        <strong class="col-lg-2">Managed by:</strong>
+                        <span class="col-lg-4" t-field="ticket.team_id.name"/>
+                        <strong class="col-lg-2">Category:</strong>
+                        <span class="col-lg-4" t-field="ticket.modules_id.name"/>
+                    </div>
+                    <br/>
+                    <div class="row mb-4" t-if="ticket.partner_id">
+                        <strong class="col-lg-2">Reported by:</strong>
+                        <div class="col-lg-10">
+                            <div class="row">
+                                <div class="col flex-grow-0 pr-3">
+                                    <img t-if="ticket.partner_id.image_1024" class="rounded-circle o_portal_contact_img" t-attf-src="data:image/png;base64,#{ticket.partner_id.image_1024}" alt="Contact"/>
+                                    <img t-else="" class="rounded-circle o_portal_contact_img" t-attf-src="data:image/png;base64,#{ticket.partner_id.avatar_1024}" alt="Contact"/>
+                                </div>
+                                <div class="col pl-sm-0">
+                                    <div t-field="ticket.partner_id" t-options='{"widget": "contact", "fields": ["name", "email"], "no_marker": true}'/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4" t-if="ticket.user_id">
+                        <strong class="col-lg-2">Assigned to:</strong>
+                        <div class="col-lg-10">
+                            <div class="row">
+                                <div class="col flex-grow-0 pr-3">
+                                    <img t-if="ticket.user_id.image_1024" class="rounded-circle o_portal_contact_img" t-attf-src="data:image/png;base64,#{ticket.user_id.image_1024}" alt="Contact"/>
+                                    <img t-else="" class="rounded-circle o_portal_contact_img" t-attf-src="data:image/png;base64,#{ticket.partner_id.avatar_1024}" alt="User"/>
+                                </div>
+                                <div class="col pl-sm-0">
+                                    <div t-field="ticket.user_id" t-options='{"widget": "contact", "fields": ["name", "email"], "no_marker": true}'/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4" name="description">
+                        <strong class="col-lg-2">Description</strong>
+                        <div t-if="ticket.description" class="col-lg-10" t-field="ticket.description"/>
+                        <div t-else="" class="col-lg-10">
+                            <em class="text-muted"><small>No description</small></em>
+                        </div>
+                    </div>
+                    <div class="o_portal_messages_container mt32">
+                        <h4>Message and communication history</h4>
+                        <t t-call="portal.message_thread">
+                            <t t-set="object" t-value="ticket"/>
+                            <t t-set="pid" t-value="pid"/>
+                            <t t-set="hash" t-value="hash"/>
+                            <t t-set="disable_composer" t-value="ticket.stage_id.closed"/>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_create_ticket" name="Create Ticket">
+        <t t-call="portal.portal_layout">
+            <div class="container">
+                <h2 class="text-muted">
+                    Submit a Ticket
+                </h2>
+            </div>
+            <div id="helpdesk_section">
+                <section id="forms" class="s_website_form" data-vcss="001" data-snippet="s_website_form">
+                    <div class="container">
+                        <!--data-success-mode="redirect" data-success-page="/your-ticket-has-been-submitted"-->
+                        <form id="helpdesk_ticket_form_one" action="/submitted/ticket" method="POST" class="o_mark_required" data-mark="*" enctype="multipart/form-data" data-editable-form="false" hide-change-model="true">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <div class="s_website_form_rows row s_col_no_bgcolor">
+                                <div class="form-group col-9 s_website_form_field s_website_form_model_required" data-type="char" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="name">
+                                            <span class="s_website_form_label_content">Your Name</span>
+                                            <span class="s_website_form_mark"> *</span>
+                                        </label>
+                                        <div class="col-sm col-xs-10">
+                                            <input type="text" class="form-control s_website_form_input" name="name" t-attf-value="#{name}" required="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-9 s_website_form_field s_website_form_model_required" data-type="email" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="email">
+                                            <span class="s_website_form_label_content">Your Email</span>
+                                            <span class="s_website_form_mark"> *</span>
+                                        </label>
+                                        <div class="col-sm col-xs-10">
+                                            <input type='email' class='form-control s_website_form_input' name="email" t-attf-value="#{email}" readonly="True" required="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-9 s_website_form_field s_website_form_model_required" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="category">
+                                            <span class="s_website_form_label_content">Ticket type</span>
+                                            <span class="s_website_form_mark"> *</span>
+                                        </label>
+                                        <div class="col-sm col-xs-10">
+                                            <select class="form-control s_website_form_input" id="category" name="category" required="1">
+                                                <t t-foreach="categories" t-as="cat">
+                                                    <option t-attf-value="#{cat.id}">
+                                                        <t t-esc="cat.name"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-9 s_website_form_field s_website_form_model_required" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="urgency">
+                                            <span class="s_website_form_label_content">Type priority</span>
+                                            <span class="s_website_form_mark"> *</span>
+                                        </label>
+                                        <div class="col-sm col-xs-10">
+                                            <select class="form-control" id="urgency" name="urgency" required="1">
+                                                <t t-foreach="urgencies" t-as="urg">
+                                                    <option t-attf-value="#{urg.id}">
+                                                        <t t-esc="urg.name"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-9 s_website_form_field" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="module">
+                                            <span class="s_website_form_label_content">Category</span>
+                                        </label>
+                                        <div class="col-sm col-xs-10">
+                                            <select class="form-control" id="module" name="module">
+                                                <t t-foreach="modules" t-as="mod">
+                                                    <option t-attf-value="#{mod.id}">
+                                                        <t t-esc="mod.name"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-9 s_website_form_field s_website_form_model_required" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="environment">
+                                            <span class="s_website_form_label_content">Environment</span>
+                                            <span class="s_website_form_mark"> *</span>
+                                        </label>
+                                        <div class="col-sm col-xs-10">
+                                            <select class="form-control" id="environment" name="environment" required="1">
+                                                <t t-foreach="environments" t-as="en">
+                                                    <option t-attf-value="#{en.id}">
+                                                        <t t-esc="en.name"/>
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-9 s_website_form_field s_website_form_model_required" data-type="char" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="subject">
+                                            <span class="s_website_form_label_content">Subject</span>
+                                            <span class="s_website_form_mark"> *</span>
+                                        </label>
+                                        <div class="col-sm col-xs-10">
+                                            <input type="text" class="form-control s_website_form_input" name="subject" required="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-9 s_website_form_field" data-type="text" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="description">
+                                            <span class="s_website_form_label_content">Description</span>
+                                        </label>
+                                        <div class="col-sm col-xs-10">
+                                            <textarea class="form-control s_website_form_input" name="description" style="min-height: 120px" required="True"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-9 s_website_form_field" data-type="binary" data-name="Field">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="attachment">
+                                            <span class="s_website_form_label_content">Attachment(s)</span>
+                                        </label>
+                                        <div class="col-sm col-xs-10">
+                                            <input id="attachment" type="file" name="attachment" class="form-control s_website_form_input" multiple="true" max="3" accept=".jpg, .jpeg, .png" total-max-size="5120"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-9 s_website_form_submit" data-name="Submit Button">
+                                    <div style="width: 200px;" class="s_website_form_label">
+                                        <button class="btn btn-primary btn-lg">Submit Ticket</button>
+                                        <span id="s_website_form_result"></span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>
