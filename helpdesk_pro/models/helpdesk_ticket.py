@@ -107,7 +107,7 @@ class HelpdeskTicket(models.Model):
     project_count = fields.Integer(compute='_compute_project_task', string="Number of Project")
     task_count = fields.Integer(compute='_compute_project_task', string="Number of Task")
     resource_calendar_id = fields.Many2one('resource.calendar', 'Working Hours', related='team_id.resource_calendar_id', domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
-    check_tm = fields.Boolean('TM Project?', default=False)
+    check_tm = fields.Boolean('Manual Project?', default=False)
 
     def assign_to_me(self):
         self.write({"user_id": self.env.user.id})
@@ -139,12 +139,9 @@ class HelpdeskTicket(models.Model):
         return res
 
     def compose_email_message(self, ticket):
-        body_message = 'mensaje mensaje'
         obj_partner_id = self.env['res.partner'].search([('name', 'like', 'Admin')], limit=1)
         email_from = obj_partner_id.email if obj_partner_id else 'admin@email.com'
         email_to = ticket.partner_id.email if ticket.partner_id else 'user@email.com'
-        author_id = obj_partner_id.id
-        subtype_id = self.env["ir.model.data"]._xmlid_to_res_id('mail.mt_comment')
         mail_data = {
             'email_from': email_from,
             'email_to': email_to,
@@ -168,7 +165,13 @@ class HelpdeskTicket(models.Model):
         return True
 
     def get_portal_url(self):
-        return
+        # return {
+        #     'type': 'ir.actions.act_url',
+        #     'name': "Open my tickets",
+        #     'target': 'self',
+        #     'url': '/my/ticket/%s/%s' % (self.id, self.access_token)
+        # }
+        pass
 
     def copy(self, default=None):
         self.ensure_one()
@@ -332,7 +335,7 @@ class HelpdeskTicket(models.Model):
         }
         obj_waiting = self.env['detail.waiting.days'].search([('end_date', '=', False)], limit=1)
         if obj_waiting:
-            obj_waiting.write(dict_wait)
+            obj_waiting.sudo().write(dict_wait)
             # record.message_post(body=_("Update time waiting: %s") % obj_waiting.name)
 
     def check_project_related(self):
@@ -355,17 +358,20 @@ class HelpdeskTicket(models.Model):
         for record in self:
             ok_project = self.check_project_related()
             if ok_project:
-                record.check_working = True
-                record.check_waiting = False
-                record.check_resolved = False
-                record.check_cancel = False
-                record.check_email = False
-                record.check_task = True
-                record.kanban_state = 'normal'
+                dict_update_f = {
+                    'check_working': True,
+                    'check_waiting': False,
+                    'check_resolved': False,
+                    'check_cancel': False,
+                    'check_email': False,
+                    'check_task': True,
+                    'kanban_state': 'normal',
+
+                }
+                record.sudo().write(dict_update_f)
                 obj_stage = self.env['helpdesk.ticket.stage'].search([('key_stage', '=', 'pro')], limit=1)
                 if obj_stage:
-                    record.stage_id = obj_stage.id
-                    record.end_date = datetime.now()
+                    record.sudo().write({'stage_id': obj_stage.id, 'end_date': datetime.now()})
                     self.general_update(record)
 
     def assign_ticket_waiting(self):
