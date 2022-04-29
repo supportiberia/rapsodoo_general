@@ -107,6 +107,7 @@ class HelpdeskTicket(models.Model):
     project_count = fields.Integer(compute='_compute_project_task', string="Number of Project")
     task_count = fields.Integer(compute='_compute_project_task', string="Number of Task")
     resource_calendar_id = fields.Many2one('resource.calendar', 'Working Hours', related='team_id.resource_calendar_id', domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
+    check_tm = fields.Boolean('TM Project?', default=False)
 
     def assign_to_me(self):
         self.write({"user_id": self.env.user.id})
@@ -131,13 +132,43 @@ class HelpdeskTicket(models.Model):
     def create(self, vals):
         if vals.get("number", "/") == "/":
             vals["number"] = self._prepare_ticket_number(vals)
-            template_id = self.env.ref('helpdesk_pro.new_ticket_request_email_template')
-            template_id.send_mail(self.id, force_send=True)
-            # new_ticket_request_email_template
+            res = super(HelpdeskTicket, self).create(vals)
+            mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.new_ticket_request_email_template')
+            self._create_mail_begin(mail_template, res)
             # add equipo y assigned
+        return res
 
+    def compose_email_message(self, ticket):
+        body_message = 'mensaje mensaje'
+        obj_partner_id = self.env['res.partner'].search([('name', 'like', 'Admin')], limit=1)
+        email_from = obj_partner_id.email if obj_partner_id else 'admin@email.com'
+        email_to = ticket.partner_id.email if ticket.partner_id else 'user@email.com'
+        author_id = obj_partner_id.id
+        subtype_id = self.env["ir.model.data"]._xmlid_to_res_id('mail.mt_comment')
+        mail_data = {
+            'email_from': email_from,
+            'email_to': email_to,
+            'res_id': ticket.id
+        }
+        return mail_data
 
-        return super().create(vals)
+    def _create_mail_begin(self, template, ticket):
+        template_browse = self.env['mail.template'].browse(template)
+        data_compose = self.compose_email_message(ticket)
+        if template_browse and data_compose:
+            values = template_browse.generate_email(ticket.id, ['subject', 'body_html', 'email_from', 'email_to', 'partner_to', 'reply_to'])
+            values['email_to'] = data_compose['email_to']
+            values['email_from'] = data_compose['email_from']
+            values['reply_to'] = data_compose['email_from']
+            values['res_id'] = data_compose['res_id']
+            mail_mail_obj = self.env['mail.mail']
+            msg_id = self.env['mail.mail'].sudo().create(values)
+            if msg_id:
+                mail_mail_obj.send(msg_id)
+        return True
+
+    def get_portal_url(self):
+        return
 
     def copy(self, default=None):
         self.ensure_one()
@@ -164,6 +195,16 @@ class HelpdeskTicket(models.Model):
         for ticket in self.browse(self.env.context["active_ids"]):
             ticket.copy()
 
+    @api.constrains('stage_id')
+    def _onchange_stage_id(self):
+        project_filter = False
+        for record in self:
+            if not record.project_id:
+                obj_project_id = self.env['project.project'].search([('partner_id', '=', record.client_id.id)], limit=1)
+                project_filter = obj_project_id.filtered(lambda e: e.count_hours != 0 and e.count_hours == e.diff_hours) if obj_project_id else False
+            if project_filter:
+                record.project_id = project_filter.id
+
     def _prepare_ticket_number(self, values):
         seq = self.env["ir.sequence"]
         if "company_id" in values:
@@ -178,7 +219,7 @@ class HelpdeskTicket(models.Model):
                 ticket.stage_id.mail_template_id,
                 {
                     "auto_delete_message": True,
-                    "subtype_id": self.env["ir.model.data"].xmlid_to_res_id("mail.mt_note"),
+                    "subtype_id": self.env["ir.model.data"]._xmlid_to_res_id("mail.mt_note"),
                     "email_layout_xmlid": "mail.mail_notification_light",
                 },
             )
@@ -296,7 +337,7 @@ class HelpdeskTicket(models.Model):
 
     def check_project_related(self):
         for record in self:
-            if not record.project_id:
+            if record.check_tm and not record.project_id:
                 raise UserError(_("Project is required to work on this ticket.\nCreate a project "
                                   "or contact an Administrator."))
             else:
@@ -304,7 +345,7 @@ class HelpdeskTicket(models.Model):
 
     def check_task_related(self):
         for record in self:
-            if not record.task_id:
+            if record.check_tm and not record.task_id:
                 raise UserError(_("Task is required to resolve or close work on this ticket.\nCreate a task "
                                   "or contact an Administrator."))
             else:

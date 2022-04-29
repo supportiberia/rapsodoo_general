@@ -187,25 +187,25 @@
                         <form id="helpdesk_ticket_form_one" action="/submitted/ticket" method="POST" class="o_mark_required" data-mark="*" enctype="multipart/form-data" data-editable-form="false" hide-change-model="true">
                             <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                             <div class="s_website_form_rows row s_col_no_bgcolor">
-                                <div class="form-group col-9 s_website_form_field s_website_form_model_required" data-type="char" data-name="Field">
+                                <div class="form-group col-9 s_website_form_field s_website_form_model_required s_website_form_dnone" data-type="char" data-name="Field">
                                     <div class="row s_col_no_resize s_col_no_bgcolor">
                                         <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="name">
                                             <span class="s_website_form_label_content">Your Name</span>
                                             <span class="s_website_form_mark"> *</span>
                                         </label>
                                         <div class="col-sm col-xs-10">
-                                            <input type="text" class="form-control s_website_form_input" name="name" t-attf-value="#{name}" required="1"/>
+                                            <input type="hidden" class="form-control s_website_form_input" name="name" t-attf-value="#{name}" required="1"/>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-group col-9 s_website_form_field s_website_form_model_required" data-type="email" data-name="Field">
+                                <div class="form-group col-9 s_website_form_field s_website_form_model_required s_website_form_dnone" data-type="email" data-name="Field">
                                     <div class="row s_col_no_resize s_col_no_bgcolor">
                                         <label class="col-form-label col-auto s_website_form_label" style="width: 150px" for="email">
                                             <span class="s_website_form_label_content">Your Email</span>
                                             <span class="s_website_form_mark"> *</span>
                                         </label>
                                         <div class="col-sm col-xs-10">
-                                            <input type='email' class='form-control s_website_form_input' name="email" t-attf-value="#{email}" readonly="True" required="1"/>
+                                            <input type="hidden" class='form-control s_website_form_input' name="email" t-attf-value="#{email}" readonly="True" required="1"/>
                                         </div>
                                     </div>
                                 </div>

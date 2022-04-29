@@ -25,10 +25,10 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button class="oe_stat_button" type="object" name="action_open_task" icon="fa-tasks" attrs="{'invisible': [('project_count', '=', 0)]}">
+                        <button class="oe_stat_button" type="object" name="action_open_task" icon="fa-tasks" attrs="{'invisible': [('check_tm', '=', True)]}">
                             <field name="task_count" widget="statinfo" string="Tasks"/>
                         </button>
-                        <button class="oe_stat_button" type="object" name="action_open_project" icon="fa-puzzle-piece">
+                        <button class="oe_stat_button" type="object" name="action_open_project" icon="fa-puzzle-piece" attrs="{'invisible': [('check_tm', '=', True)]}">
                             <field name="project_count" widget="statinfo" string="Projects"/>
                         </button>
                     </div>
@@ -50,8 +50,9 @@
                             <field name="priority" widget="priority" readonly="True"/>
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                             <field name="resource_calendar_id" required="1"/>
-                            <field name="project_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]"/>
-                            <field name="task_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]"/>
+                            <field name="check_tm"/>
+                            <field name="project_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
+                            <field name="task_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
                             <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
                         </group>
                         <group name="second">
@@ -281,6 +282,12 @@
         <field name="res_model">helpdesk.ticket.tag</field>
         <field name="view_mode">tree,form</field>
     </record>
+    <record id="helpdesk_ticket_module_action" model="ir.actions.act_window">
+        <field name="name">Ticket module</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">helpdesk.ticket.module</field>
+        <field name="view_mode">tree,form</field>
+    </record>
 
     <!-- View Form detail.days -->
     <record id="detail_days_form" model="ir.ui.view">
@@ -326,7 +333,8 @@
             <menuitem name="Stages" id="support_menu_item_setting3" action="helpdesk_ticket_stage_action" sequence="3"/>
             <menuitem name="Teams" id="support_menu_item_setting4" action="helpdesk_ticket_team_action" sequence="4"/>
             <menuitem name="Ticket Tags" id="support_menu_item_setting5" action="helpdesk_ticket_tag_action" sequence="5"/>
-            <menuitem name='Cross ticket' id="support_menu_item_setting6" action="action_cross_ticket" sequence="999"/>
+            <menuitem name="Ticket modules" id="support_menu_item_setting6" action="helpdesk_ticket_module_action" sequence="6"/>
+            <menuitem name='Cross ticket' id="support_menu_item_setting7" action="action_cross_ticket" sequence="999"/>
         </menuitem>
     </menuitem>
 </odoo>
