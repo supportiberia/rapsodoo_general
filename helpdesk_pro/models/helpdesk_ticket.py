@@ -22,6 +22,9 @@ class HelpdeskTicket(models.Model):
     def _get_default_stage_id(self):
         return self.env["helpdesk.ticket.stage"].search([], limit=1).id
 
+    def _get_default_team_id(self):
+        return self.env["helpdesk.ticket.team"].search([], limit=1).id
+
     @api.model
     def _read_group_stage_ids(self, stages, domain, order):
         stage_ids = self.env["helpdesk.ticket.stage"].search([])
@@ -59,7 +62,7 @@ class HelpdeskTicket(models.Model):
              "comes from (it could be a phone call, an email...)",
     )
     category_id = fields.Many2one(comodel_name="helpdesk.ticket.category", string="Ticket type")
-    team_id = fields.Many2one(comodel_name="helpdesk.ticket.team", string="Team")
+    team_id = fields.Many2one(comodel_name="helpdesk.ticket.team", string="Team", default=_get_default_team_id)
     priority = fields.Selection(
         selection=[
             ("0", "Low"),
@@ -134,10 +137,27 @@ class HelpdeskTicket(models.Model):
         if vals.get("number", "/") == "/":
             vals["number"] = self._prepare_ticket_number(vals)
             res = super(HelpdeskTicket, self).create(vals)
+            if not res.project_id:
+                res.set_project_id()
+            if res.team_id and not res.user_id:
+                res.set_user_id()
             mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.new_ticket_request_email_template')
             self._create_mail_begin(mail_template, res)
-            # add equipo y assigned
         return res
+
+    def set_project_id(self):
+        obj_project_id = self.env['project.project'].search([('partner_id', '=', self.client_id.id)], limit=1)
+        project_filter = obj_project_id.filtered(lambda e: e.count_hours != 0 and e.count_hours == e.diff_hours) if obj_project_id else False
+        if project_filter:
+            self.write({'project_id': project_filter.id})
+
+    def set_user_id(self):
+        if self.team_id and self.team_id.user_ids:
+            member = self.team_id.user_ids[0]
+            list_users = [{'user': user, 'count_ticket': user.count_ticket} for user in self.team_id.user_ids]
+            val_min = min(list_users, key=lambda x: x['count_ticket'])
+            member = val_min['user']
+            self.write({'user_id': member.id})
 
     def compose_email_message(self, ticket):
         obj_partner_id = self.env['res.partner'].search([('name', 'like', 'Admin')], limit=1)
@@ -166,12 +186,6 @@ class HelpdeskTicket(models.Model):
         return True
 
     def get_portal_url(self):
-        # return {
-        #     'type': 'ir.actions.act_url',
-        #     'name': "Open my tickets",
-        #     'target': 'self',
-        #     'url': '/my/ticket/%s/%s' % (self.id, self.access_token)
-        # }
         pass
 
     def copy(self, default=None):
@@ -198,16 +212,6 @@ class HelpdeskTicket(models.Model):
     def action_duplicate_tickets(self):
         for ticket in self.browse(self.env.context["active_ids"]):
             ticket.copy()
-
-    @api.constrains('stage_id')
-    def _onchange_stage_id(self):
-        project_filter = False
-        for record in self:
-            if not record.project_id:
-                obj_project_id = self.env['project.project'].search([('partner_id', '=', record.client_id.id)], limit=1)
-                project_filter = obj_project_id.filtered(lambda e: e.count_hours != 0 and e.count_hours == e.diff_hours) if obj_project_id else False
-            if project_filter:
-                record.project_id = project_filter.id
 
     def _prepare_ticket_number(self, values):
         seq = self.env["ir.sequence"]
@@ -337,7 +341,6 @@ class HelpdeskTicket(models.Model):
         obj_waiting = self.env['detail.waiting.days'].search([('end_date', '=', False)], limit=1)
         if obj_waiting:
             obj_waiting.sudo().write(dict_wait)
-            # record.message_post(body=_("Update time waiting: %s") % obj_waiting.name)
 
     def check_project_related(self):
         for record in self:

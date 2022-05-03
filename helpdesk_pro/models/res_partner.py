@@ -28,3 +28,16 @@ class Partner(models.Model):
             "domain": [("partner_id", "child_of", self.id)],
             "context": self.env.context,
         }
+
+
+class User(models.Model):
+    _inherit = 'res.users'
+
+    def _get_my_tickets(self):
+        for record in self:
+            record.count_ticket = 0
+            obj_ticket_ids = self.env['helpdesk.ticket'].search([('stage_id.closed', '=', False), ('user_id', '=', record.id)])
+            if obj_ticket_ids:
+                record.count_ticket = len(obj_ticket_ids)
+
+    count_ticket = fields.Integer('Ticket by user', compute='_get_my_tickets')
