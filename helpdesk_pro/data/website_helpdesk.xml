@@ -236,12 +236,12 @@
             <field name="body_html" type="xml">
                 <div style="margin: 0px; padding: 0px;">
                     <p style="margin: 0px; padding: 0px;">
-                        This automatic message informs you that the technician in charge of your ticket (reference <t t-out="object.id or ''" contenteditable="false" data-oe-t-inline="true">15</t>) is waiting for some action from you.<br/>
+                        This automatic message informs you that the technician in charge of your ticket (reference <a t-attf-href="/my/ticket/{{object.id}}"><t t-out="object.number or ''"># </t></a>) is waiting for some action from you.<br/>
                         Access your personal area of our portal and check what is required by the technician.<br/>
                         If you have any further questions or comments, do not hesitate to contact us through your personal area<br/><br/>
                         Thank you for your cooperation.<br/>
                         Kind regards,<br/><br/>
-                        <t t-out="object.team_id.name or 'Helpdesk'" contenteditable="false" data-oe-t-inline="true">Helpdesk</t> Team.
+                        <t t-out="object.team_id.name or 'Support'"> Team</t>.
                     </p>
                 </div>
             </field>
@@ -257,17 +257,108 @@
             <field name="email_to">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
             <field name="body_html" type="html">
                 <div>
-                    Dear <t t-out="object.user_id.name or ''"></t>,<br/><br/>
-                    The ticket
-                    <t t-if="object.get_portal_url()" data-oe-t-group="0" data-oe-t-group-active="true">
-                        <a t-attf-href="/my/ticket/{{ object.id }}/{{ object.access_token }}" t-out="object.name or ''" contenteditable="false"></a>
-                    </t>
+                    Dear <t t-out="object.user_id.name or ''">User</t>,<br/><br/>
+                    The ticket <a t-attf-href="/my/ticket/{{object.id}}"><t t-out="object.number or ''"># </t></a>
                     to which it has been assigned is operational on the Support platform.<br/><br/>
                     Kind regards,<br/><br/>
-                    <t t-out="object.team_id.name or 'Helpdesk'" contenteditable="false" data-oe-t-inline="true">Helpdesk</t>.
+                    <t t-out="object.team_id.name or 'Support'"> Team</t>.
                 </div>
             </field>
             <field name="lang">{{ object.partner_id.lang or object.user_id.lang or user.lang }}</field>
+            <field name="auto_delete" eval="False"/>
+        </record>
+
+        <record id="new_ticket_request_email_template" model="mail.template">
+            <field name="name">Ticket: Reception Acknowledgment</field>
+            <field name="model_id" ref="helpdesk_pro.model_helpdesk_ticket"/>
+            <field name="subject">{{ object.name }}</field>
+            <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
+            <field name="email_to">{{ (object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') }}</field>
+            <field name="body_html" type="xml">
+                <table border="0" cellpadding="0" cellspacing="0" style="padding-top: 16px; background-color: #F1F1F1; font-family:Verdana, Arial,sans-serif; color: #454748; width: 100%; border-collapse:separate;">
+                    <tr><td align="center">
+                        <table border="0" cellpadding="0" cellspacing="0" width="590" style="padding: 16px; background-color: white; color: #454748; border-collapse:separate;">
+                            <tbody>
+                                <!-- HEADER -->
+                                <tr>
+                                    <td align="center" style="min-width: 590px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                                            <tr><td valign="middle">
+                                                <span style="font-size: 10px;">Your Account</span><br/>
+                                                <span style="font-size: 20px; font-weight: bold;">
+                                                    <t t-out="object.partner_id.name or ''">User</t>
+                                                </span>
+                                            </td><td valign="middle" align="right">
+                                                <img t-attf-src="/logo.png?company={{ object.company_id.id }}" style="padding: 0px; margin: 0px; height: auto; width: 80px;" t-att-alt="object.company_id.name"/>
+                                            </td></tr>
+                                            <tr><td colspan="2" style="text-align:center;">
+                                              <hr width="100%" style="background-color:rgb(204,204,204);border:medium none;clear:both;display:block;font-size:0px;min-height:1px;line-height:0; margin: 16px 0px 16px 0px;"/>
+                                            </td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- CONTENT -->
+                                <tr>
+                                    <td align="center" style="min-width: 590px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                                            <tr><td valign="top" style="font-size: 13px;">
+                                                <div>
+                                                    Dear <t t-out="object.partner_id.name or ''">User</t>,<br/><br/>
+                                                    Your request <strong><t t-out="object.name or ''">Ticket</t></strong><br/>
+                                                    has been received and is being reviewed by our <strong><t t-out="object.team_id.name or ''">Support </t></strong> team.<br/>
+                                                    The reference of your ticket is <t t-out="object.number or ''">#</t>.<br/><br/>
+                                                    <div style="margin: 16px 0px 16px 0px;text-align:center;">
+                                                        <a t-attf-href="/my/ticket/{{object.id}}"
+                                                            style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                                                            View ticket
+                                                        </a>
+                                                    </div>
+                                                    To add additional comments, reply to this email.<br/><br/>
+                                                    Thanks,<br/><br/>
+                                                    <t t-out="object.team_id.name or 'Support'"> Team</t>.
+                                                </div>
+                                            </td></tr>
+                                            <tr><td style="text-align:center;">
+                                              <hr width="100%" style="background-color:rgb(204,204,204);border:medium none;clear:both;display:block;font-size:0px;min-height:1px;line-height:0; margin: 16px 0px 16px 0px;"/>
+                                            </td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <!-- FOOTER -->
+                                <tr>
+                                    <td align="center" style="min-width: 590px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; font-size: 11px; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                                            <tr><td valign="middle" align="left">
+                                                <t t-out="object.company_id.name or ''">YourCompany</t>
+                                            </td></tr>
+                                            <tr><td valign="middle" align="left" style="opacity: 0.7;">
+                                                <t t-out="object.company_id.phone or ''">+1 650-123-4567</t>
+                                                <t t-if="object.company_id.email">
+                                                    | <a t-attf-href="'mailto:%s' % {{ object.company_id.email }}" style="text-decoration:none; color: #454748;"><t t-out="object.company_id.email or ''">info@yourcompany.com</t></a>
+                                                </t>
+                                                <t t-if="object.company_id.website">
+                                                    | <a t-attf-href="'%s' % {{ object.company_id.website }}" style="text-decoration:none; color: #454748;">
+                                                        <t t-out="object.company_id.website or ''">http://www.example.com</t>
+                                                    </a>
+                                                </t>
+                                            </td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <!-- POWERED BY -->
+                            <tr><td align="center" style="min-width: 590px;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: #F1F1F1; color: #454748; padding: 8px; border-collapse:separate;">
+                                  <tr><td style="text-align: center; font-size: 13px;">
+                                    Powered by <a target="_blank" href="https://www.rapsodoo.com/es/" style="color: #875A7B;">Rapsodoo Iberia</a>
+                                  </td></tr>
+                                </table>
+                            </td></tr>
+                        </table>
+                    </td></tr>
+                </table>
+            </field>
+            <field name="lang">${object.partner_id.lang or object.user_id.lang or user.lang}</field>
             <field name="auto_delete" eval="False"/>
         </record>
 
@@ -289,7 +380,6 @@
             <field name="company_id"/>
             <field name="key_stage">new</field>
         </record>
-
         <record id="helpdesk_ticket_stage_in_progress" model="helpdesk.ticket.stage">
             <field name="sequence">2</field>
             <field name="name">In Progress</field>
@@ -374,36 +464,6 @@
 
         <record id="seq_helpdesk_helpdesk_team1" model="helpdesk.ticket.team">
             <field name="name">Support Team</field>
-        </record>
-
-        <record id="new_ticket_request_email_template" model="mail.template">
-            <field name="name">Ticket: Reception Acknowledgment</field>
-            <field name="model_id" ref="helpdesk_pro.model_helpdesk_ticket"/>
-            <field name="subject">${object.name}</field>
-            <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
-            <field name="email_to">{{ (object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') }}</field>
-            <field name="body_html" type="xml">
-                <div>
-                    Dear ${object.sudo().partner_id.name or 'Madam/Sir'},<br /><br />
-                    Your request
-                    % if object.get_portal_url():
-                    <a href="/my/ticket/${object.id}/${object.access_token}">${object.name}</a>
-                    % endif
-                    has been received and is being reviewed by our ${object.team_id.name or ''} team.
-                    The reference of your ticket is ${object.id}.<br /><br />
-
-                    <div style="text-align: center; margin: 16px 0px 16px 0px;">
-                        <a style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;" href="${object.get_portal_url()}">View the ticket</a><br/>
-                    </div>
-
-                    To add additional comments, reply to this email.<br/><br/>
-
-                    Thank you,<br/><br/>
-                    ${object.team_id.name or 'Helpdesk'} Team.
-                </div>
-            </field>
-            <field name="lang">${object.partner_id.lang or object.user_id.lang or user.lang}</field>
-            <field name="auto_delete" eval="False"/>
         </record>
 
         <record id="seq_helpdesk_ticket_urgency1" model="helpdesk.ticket.urgency">

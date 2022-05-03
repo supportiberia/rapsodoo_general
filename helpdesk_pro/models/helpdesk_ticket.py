@@ -107,7 +107,8 @@ class HelpdeskTicket(models.Model):
     project_count = fields.Integer(compute='_compute_project_task', string="Number of Project")
     task_count = fields.Integer(compute='_compute_project_task', string="Number of Task")
     resource_calendar_id = fields.Many2one('resource.calendar', 'Working Hours', related='team_id.resource_calendar_id', domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
-    check_tm = fields.Boolean('Manual Project?', default=False)
+    check_tm = fields.Boolean('Fixed Project?', default=False)
+    company_id = fields.Many2one(comodel_name="res.company", string="Company", default=lambda self: self.env.company)
 
     def assign_to_me(self):
         self.write({"user_id": self.env.user.id})
