@@ -112,6 +112,9 @@ class HelpdeskTicket(models.Model):
     resource_calendar_id = fields.Many2one('resource.calendar', 'Working Hours', related='team_id.resource_calendar_id', domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
     check_tm = fields.Boolean('Fixed Project?', default=False)
     company_id = fields.Many2one(comodel_name="res.company", string="Company", default=lambda self: self.env.company)
+    report_count_day = fields.Float('Report Duration (days)', help='Duration planned')
+    report_count_real_day = fields.Float('Report Duration real', help='Duration real = duration planned - time waiting')
+    report_dedicated_time = fields.Float('Report Dedicated time', help='Dedicated time = Working hours * days')
 
     def assign_to_me(self):
         self.write({"user_id": self.env.user.id})
@@ -136,6 +139,7 @@ class HelpdeskTicket(models.Model):
     def create(self, vals):
         if vals.get("number", "/") == "/":
             vals["number"] = self._prepare_ticket_number(vals)
+            vals["color"] = 1
             res = super(HelpdeskTicket, self).create(vals)
             if not res.project_id:
                 res.set_project_id()
@@ -147,16 +151,15 @@ class HelpdeskTicket(models.Model):
 
     def set_project_id(self):
         obj_project_id = self.env['project.project'].search([('partner_id', '=', self.client_id.id)], limit=1)
-        project_filter = obj_project_id.filtered(lambda e: e.count_hours != 0 and e.count_hours == e.diff_hours) if obj_project_id else False
+        project_filter = obj_project_id.filtered(lambda e: e.count_hours != 0 and e.diff_hours != 0) if obj_project_id else False
         if project_filter:
             self.write({'project_id': project_filter.id})
 
     def set_user_id(self):
         if self.team_id and self.team_id.user_ids:
-            member = self.team_id.user_ids[0]
             list_users = [{'user': user, 'count_ticket': user.count_ticket} for user in self.team_id.user_ids]
             val_min = min(list_users, key=lambda x: x['count_ticket'])
-            member = val_min['user']
+            member = val_min['user'] if val_min else self.team_id.user_ids[0]
             self.write({'user_id': member.id})
 
     def compose_email_message(self, ticket):
@@ -493,6 +496,13 @@ class HelpdeskTicket(models.Model):
         action['context'] = ctx
         return action
 
+    @api.constrains('stage_id')
+    def _check_values_report(self):
+        for record in self:
+            record.report_count_day = record.count_day
+            record.report_count_real_day = record.count_real_day
+            record.report_dedicated_time = record.dedicated_time
+
 
 class CrossTicket(models.Model):
     _name = 'cross.ticket'
@@ -609,7 +619,7 @@ class Project(models.Model):
     def create(self, vals):
         request = super(Project, self).create(vals)
         if request.name:
-            request.name = request.name + '´s support pack - ' + str(request.count_hours) + 'hrs'
+            request.name = request.name + '´s support pack - ' + str(request.count_hours) + ' hrs'
         if request._context.get('active_id'):
             obj_ticket = self.env['helpdesk.ticket'].search([('id', '=', request._context.get('active_id'))], limit=1)
             if obj_ticket:
@@ -631,6 +641,13 @@ class Project(models.Model):
                     for val_all in list_all:
                         val_total += val_all
                 record.diff_hours = record.count_hours - val_total
+
+    @api.constrains('count_hours')
+    def _check_count_hours(self):
+        for record in self:
+            if record.count_hours:
+                record.name = record.name.split(' ')[:1][0]
+                record.name = record.name + ' support pack - ' + str(record.count_hours) + ' hrs'
 
 
 class Task(models.Model):

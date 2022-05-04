@@ -178,9 +178,13 @@
         <field name="name">helpdesk.ticket.view.pivot</field>
         <field name="model">helpdesk.ticket</field>
         <field name="arch" type="xml">
-            <pivot string="Pivot Analysis" disable_linking="True">
-                <field name="team_id" type="row" />
-                <field name="assigned_date" type="col" />
+            <pivot string="Pivot Analysis" disable_linking="True" sample="1">
+                <field name="team_id" type="row"/>
+                <field name="client_id" type="row"/>
+                <field name="stage_id" type="col"/>
+                <field name="report_count_day" type="measure" string="Duration (days)"/>
+                <field name="report_count_real_day" type="measure" string="Duration real"/>
+                <field name="report_dedicated_time" type="measure" widget="float_time" string="Dedicated time"/>
             </pivot>
         </field>
     </record>
@@ -190,6 +194,9 @@
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="model">project.project</field>
         <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="readonly">True</attribute>
+            </xpath>
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="count_hours" required="True"/>
                 <field name="diff_hours"/>
@@ -244,7 +251,7 @@
     <record id="helpdesk_ticket_action" model="ir.actions.act_window">
         <field name="name">Helpdesk Ticket</field>
         <field name="res_model">helpdesk.ticket</field>
-        <field name="view_mode">tree,form,pivot</field>
+        <field name="view_mode">tree,form</field>
     </record>
     <record id="helpdesk_ticket_reporting_action" model="ir.actions.act_window">
         <field name="name">Reporting</field>
