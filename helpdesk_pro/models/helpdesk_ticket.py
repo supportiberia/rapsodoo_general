@@ -139,7 +139,7 @@ class HelpdeskTicket(models.Model):
     def create(self, vals):
         if vals.get("number", "/") == "/":
             vals["number"] = self._prepare_ticket_number(vals)
-            vals["color"] = 1
+            vals["color"] = 7
             res = super(HelpdeskTicket, self).create(vals)
             if not res.project_id:
                 res.set_project_id()
@@ -373,6 +373,7 @@ class HelpdeskTicket(models.Model):
                     'check_email': False,
                     'check_task': True,
                     'kanban_state': 'normal',
+                    'color': 4
 
                 }
                 record.sudo().write(dict_update_f)
@@ -413,6 +414,7 @@ class HelpdeskTicket(models.Model):
                 record.check_email = False
                 record.check_task = True
                 record.kanban_state = 'done'
+                record.color = 15
                 obj_stage = self.env['helpdesk.ticket.stage'].search([('key_stage', '=', 'can')], limit=1)
                 if obj_stage:
                     record.stage_id = obj_stage.id
@@ -430,6 +432,7 @@ class HelpdeskTicket(models.Model):
                 record.check_email = False
                 record.check_task = True
                 record.kanban_state = 'done'
+                record.color = 10
                 obj_stage = self.env['helpdesk.ticket.stage'].search([('key_stage', '=', 'don')], limit=1)
                 if obj_stage:
                     record.stage_id = obj_stage.id
@@ -602,7 +605,7 @@ class Message(models.Model):
         if res:
             obj_ticket = self.env['helpdesk.ticket'].search([('id', '=', res.res_id),
                                                              ('partner_id', '=', res.author_id.id),
-                                                             ('stage_id.key_stage', '=', 'wai')], limit=1)
+                                                             ('stage_id.key_stage', '=', 'wai'), ('color', '=', 1)], limit=1)
             if obj_ticket:
                 obj_ticket.assign_ticket_working()
         return res

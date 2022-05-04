@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <odoo>
-
+    <!-- View Form helpdesk.ticket -->
     <record id="helpdesk_ticket_view_form" model="ir.ui.view">
         <field name="name">helpdesk.ticket.form</field>
         <field name="model">helpdesk.ticket</field>
@@ -116,6 +116,7 @@
         </field>
     </record>
 
+    <!-- View Tree helpdesk.ticket -->
     <record id="helpdesk_ticket_view_tree" model="ir.ui.view">
         <field name="name">helpdesk.ticket.view.tree</field>
         <field name="model">helpdesk.ticket</field>
@@ -139,6 +140,7 @@
         </field>
     </record>
 
+    <!-- View search helpdesk.ticket -->
     <record id="helpdesk_ticket_view_search" model="ir.ui.view">
         <field name="name">helpdesk.ticket.view.search</field>
         <field name="model">helpdesk.ticket</field>
@@ -174,6 +176,7 @@
         </field>
     </record>
 
+    <!-- View pivot helpdesk.ticket -->
     <record id="helpdesk_ticket_views_pivot" model="ir.ui.view">
         <field name="name">helpdesk.ticket.view.pivot</field>
         <field name="model">helpdesk.ticket</field>
@@ -189,7 +192,38 @@
         </field>
     </record>
 
-    <record model="ir.ui.view" id="project_project_inherit_ticket_pro_form">
+    <!-- View kanban helpdesk.ticket -->
+    <record id="helpdesk_ticket_views_kanban" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.view.kanban</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="priority">10</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" class="o_kanban_small_column" sample="1">
+                <field name="color"/>
+                <field name="stage_id" options='{"group_by_tooltip": {"description": "Stage Description"}}'/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click">
+                            <span class="oe_kanban_color_help" t-attf-title="In #{kanban_getcolorname(record.color.raw_value)}" role="img" t-attf-aria-label="In #{kanban_getcolorname(record.color.raw_value)}"/>
+                            <div class="o_dropdown_kanban dropdown">
+                                <a class="dropdown-toggle o-no-caret btn" role="button" data-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                                    <span class="fa fa-ellipsis-v"/>
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <t t-if="widget.editable"><a type="edit" class="dropdown-item" role="menuitem">Edit</a></t>
+                                    <t t-if="widget.deletable"><a type="delete" class="dropdown-item" role="menuitem">Delete</a></t>
+                                    <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- View Form project.project -->
+    <record id="project_project_inherit_ticket_pro_form" model="ir.ui.view">
         <field name="name">project.project.inherit.ticket.pro.form</field>
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="model">project.project</field>
@@ -205,7 +239,7 @@
     </record>
 
     <!-- View Form cross.ticket -->
-    <record model="ir.ui.view" id="cross_ticket_form">
+    <record id="cross_ticket_form" model="ir.ui.view">
         <field name="name">cross.ticket.form</field>
         <field name="model">cross.ticket</field>
         <field name="arch" type="xml">
@@ -226,7 +260,7 @@
     </record>
 
     <!-- View Tree cross.ticket -->
-    <record model="ir.ui.view" id="cross_ticket_tree">
+    <record id="cross_ticket_tree" model="ir.ui.view">
         <field name="name">cross.ticket.tree</field>
         <field name="model">cross.ticket</field>
         <field name="arch" type="xml">
@@ -247,11 +281,10 @@
                       (0, 0, {'view_mode': 'tree', 'view_id': ref('cross_ticket_tree')}),
                       (0, 0, {'view_mode': 'form', 'view_id': ref('cross_ticket_form')})]"/>
     </record>
-
     <record id="helpdesk_ticket_action" model="ir.actions.act_window">
         <field name="name">Helpdesk Ticket</field>
         <field name="res_model">helpdesk.ticket</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,kanban,form</field>
     </record>
     <record id="helpdesk_ticket_reporting_action" model="ir.actions.act_window">
         <field name="name">Reporting</field>
@@ -327,7 +360,7 @@
     </record>
 
     <menuitem id='support_menu_principal' name='Helpdesk' web_icon="helpdesk_pro,static/description/icon.png" groups="group_helpdesk_user_own">
-<!--        <menuitem name="Dashboard" id="support_menu_item_dashboard" action="helpdesk_ticket_action" sequence="1"/>-->
+<!--        <menuitem name="Dashboard" id="support_menu_item_dashboard" action="helpdesk_dashboard_action" sequence="1"/>-->
         <menuitem name="Tickets" id="support_menu_item_ticket" sequence="2">
             <menuitem name="Tickets" id="support_menu_item_ticket1" action="helpdesk_ticket_action" sequence="1"/>
         </menuitem>
