@@ -193,34 +193,49 @@
     </record>
 
     <!-- View kanban helpdesk.ticket -->
-    <record id="helpdesk_ticket_views_kanban" model="ir.ui.view">
-        <field name="name">helpdesk.ticket.view.kanban</field>
-        <field name="model">helpdesk.ticket</field>
-        <field name="priority">10</field>
-        <field name="arch" type="xml">
-            <kanban default_group_by="stage_id" class="o_kanban_small_column" sample="1">
-                <field name="color"/>
-                <field name="stage_id" options='{"group_by_tooltip": {"description": "Stage Description"}}'/>
-                <templates>
-                    <t t-name="kanban-box">
-                        <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click">
-                            <span class="oe_kanban_color_help" t-attf-title="In #{kanban_getcolorname(record.color.raw_value)}" role="img" t-attf-aria-label="In #{kanban_getcolorname(record.color.raw_value)}"/>
-                            <div class="o_dropdown_kanban dropdown">
-                                <a class="dropdown-toggle o-no-caret btn" role="button" data-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">
-                                    <span class="fa fa-ellipsis-v"/>
-                                </a>
-                                <div class="dropdown-menu" role="menu">
-                                    <t t-if="widget.editable"><a type="edit" class="dropdown-item" role="menuitem">Edit</a></t>
-                                    <t t-if="widget.deletable"><a type="delete" class="dropdown-item" role="menuitem">Delete</a></t>
-                                    <ul class="oe_kanban_colorpicker" data-field="color"/>
-                                </div>
-                            </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
-        </field>
-    </record>
+<!--    <record id="helpdesk_ticket_views_kanban" model="ir.ui.view">-->
+<!--        <field name="name">helpdesk.ticket.view.kanban</field>-->
+<!--        <field name="model">helpdesk.ticket</field>-->
+<!--        <field name="priority">10</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <kanban default_group_by="stage_id" class="o_kanban_small_column" sample="1">-->
+<!--                <field name="tag_ids"/>-->
+<!--                <field name="name"/>-->
+<!--                <field name="number"/>-->
+<!--                <field name="color"/>-->
+<!--                <field name="stage_id" options='{"group_by_tooltip": {"description": "Stage Description"}}'/>-->
+<!--                <templates>-->
+<!--                    <t t-name="kanban-box">-->
+<!--                        <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click">-->
+<!--                            <span class="oe_kanban_color_help" t-attf-title="In #{kanban_getcolorname(record.color.raw_value)}" role="img" t-attf-aria-label="In #{kanban_getcolorname(record.color.raw_value)}"/>-->
+<!--                            <div class="o_dropdown_kanban dropdown">-->
+<!--                                <a class="dropdown-toggle o-no-caret btn" role="button" data-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">-->
+<!--                                    <span class="fa fa-ellipsis-v"/>-->
+<!--                                </a>-->
+<!--                                <div class="dropdown-menu" role="menu">-->
+<!--                                    <t t-if="widget.editable"><a type="edit" class="dropdown-item" role="menuitem">Edit</a></t>-->
+<!--                                    <t t-if="widget.deletable"><a type="delete" class="dropdown-item" role="menuitem">Delete</a></t>-->
+<!--                                    <ul class="oe_kanban_colorpicker" data-field="color"/>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="oe_kanban_content">-->
+<!--                                <div>-->
+<!--                                    <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>-->
+<!--                                </div>-->
+<!--                                <div>-->
+<!--                                    <h6><field name="number"/></h6>-->
+<!--                                </div>-->
+<!--                                <div>-->
+<!--                                    <field name="client_id"/>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="oe_clear"></div>-->
+<!--                        </div>-->
+<!--                    </t>-->
+<!--                </templates>-->
+<!--            </kanban>-->
+<!--        </field>-->
+<!--    </record>-->
 
     <!-- View Form project.project -->
     <record id="project_project_inherit_ticket_pro_form" model="ir.ui.view">
@@ -284,7 +299,7 @@
     <record id="helpdesk_ticket_action" model="ir.actions.act_window">
         <field name="name">Helpdesk Ticket</field>
         <field name="res_model">helpdesk.ticket</field>
-        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
     <record id="helpdesk_ticket_reporting_action" model="ir.actions.act_window">
         <field name="name">Reporting</field>
