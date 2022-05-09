@@ -91,8 +91,8 @@ class HelpdeskTicket(models.Model):
     entry_date = fields.Date('Init date', default=fields.Date.context_today, tracking=True)
     end_date = fields.Date('Finish date', tracking=True)
     count_day = fields.Float('Duration (days)', help='Duration planned', tracking=True, compute='_check_duration_project')
-    count_real_day = fields.Float('Duration real', help='Duration real = duration planned - time waiting', tracking=True, compute='_check_duration_project')
-    dedicated_time = fields.Float('Dedicated time', help='Dedicated time = Working hours * days', tracking=True, compute='_check_duration_project')
+    count_real_day = fields.Float('Duration real (days)', help='Duration real = duration planned - time waiting', tracking=True, compute='_check_duration_project')
+    dedicated_time = fields.Float('Dedicated time (hrs)', help='Dedicated time = Hours by task', tracking=True, compute='_check_duration_project')
     environment = fields.Many2one('helpdesk.ticket.environment', string='Environment')
     git_link = fields.Char('Git Link')
     url_link = fields.Char('Environment Link')
@@ -114,7 +114,7 @@ class HelpdeskTicket(models.Model):
     company_id = fields.Many2one(comodel_name="res.company", string="Company", default=lambda self: self.env.company)
     report_count_day = fields.Float('Report Duration (days)', help='Duration planned')
     report_count_real_day = fields.Float('Report Duration real', help='Duration real = duration planned - time waiting')
-    report_dedicated_time = fields.Float('Report Dedicated time', help='Dedicated time = Working hours * days')
+    report_dedicated_time = fields.Float('Report Dedicated time', help='Dedicated time = Hours by task')
 
     def assign_to_me(self):
         self.write({"user_id": self.env.user.id})
@@ -222,19 +222,19 @@ class HelpdeskTicket(models.Model):
             seq = seq.with_company(values["company_id"])
         return seq.next_by_code("helpdesk.ticket.sequence") or "/"
 
-    def _track_template(self, tracking):
-        res = super()._track_template(tracking)
-        ticket = self[0]
-        if "stage_id" in tracking and ticket.stage_id.mail_template_id:
-            res["stage_id"] = (
-                ticket.stage_id.mail_template_id,
-                {
-                    "auto_delete_message": True,
-                    "subtype_id": self.env["ir.model.data"]._xmlid_to_res_id("mail.mt_note"),
-                    "email_layout_xmlid": "mail.mail_notification_light",
-                },
-            )
-        return res
+    # def _track_template(self, tracking):
+    #     res = super()._track_template(tracking)
+    #     ticket = self[0]
+    #     if "stage_id" in tracking and ticket.stage_id.mail_template_id:
+    #         res["stage_id"] = (
+    #             ticket.stage_id.mail_template_id,
+    #             {
+    #                 "auto_delete_message": True,
+    #                 "subtype_id": self.env["ir.model.data"]._xmlid_to_res_id("mail.mt_note"),
+    #                 "email_layout_xmlid": "mail.mail_notification_light",
+    #             },
+    #         )
+    #     return res
 
     @api.model
     def message_new(self, msg, custom_values=None):
@@ -381,6 +381,8 @@ class HelpdeskTicket(models.Model):
                 if obj_stage:
                     record.sudo().write({'stage_id': obj_stage.id, 'end_date': datetime.now()})
                     self.general_update(record)
+                    mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.process_ticket_request_email_template')
+                    record._create_mail_begin(mail_template, record)
 
     def assign_ticket_waiting(self):
         ok_project = self.check_project_related()
@@ -420,6 +422,8 @@ class HelpdeskTicket(models.Model):
                     record.stage_id = obj_stage.id
                     record.end_date = datetime.now()
                     self.general_update(record)
+                    mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.closed_ticket_template')
+                    record._create_mail_begin(mail_template, record)
 
     def assign_ticket_resolved(self):
         for record in self:
@@ -438,6 +442,8 @@ class HelpdeskTicket(models.Model):
                     record.stage_id = obj_stage.id
                     record.end_date = datetime.now()
                     self.general_update(record)
+                    mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.closed_ticket_template')
+                    record._create_mail_begin(mail_template, record)
 
     @api.depends('entry_date', 'end_date')
     def _check_duration_project(self):
@@ -460,6 +466,9 @@ class HelpdeskTicket(models.Model):
             for val_w in list_wait:
                 val_waiting += val_w
             record.count_real_day = record.count_day - val_waiting
+            if record.task_id:
+                time_lines = self.env['account.analytic.line'].search([('task_id', '=', record.task_id.id)])
+                record.dedicated_time = sum([line.unit_amount for line in time_lines])
 
     def check_weekend(self, end_date, entry_date):
         count_w = 0
@@ -594,6 +603,8 @@ class MailComposeMessage(models.TransientModel):
                     create_waiting = self.env['detail.waiting.days'].create(dict_wait)
                     if create_waiting:
                         obj_ticket.message_post(body=_("Created time waiting: %s") % create_waiting.name)
+                mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.waiting_ticket_request_email_template')
+                obj_ticket._create_mail_begin(mail_template, obj_ticket)
         return super(MailComposeMessage, self)._action_send_mail(auto_commit=auto_commit)
 
 

@@ -186,8 +186,8 @@
                 <field name="client_id" type="row"/>
                 <field name="stage_id" type="col"/>
                 <field name="report_count_day" type="measure" string="Duration (days)"/>
-                <field name="report_count_real_day" type="measure" string="Duration real"/>
-                <field name="report_dedicated_time" type="measure" widget="float_time" string="Dedicated time"/>
+                <field name="report_count_real_day" type="measure" string="Duration real (days)"/>
+                <field name="report_dedicated_time" type="measure" widget="float_time" string="Dedicated time (hrs)"/>
             </pivot>
         </field>
     </record>
