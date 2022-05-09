@@ -27,6 +27,7 @@ class HelpdeskTicketModule(models.Model):
     active = fields.Boolean(string="Active", default=True)
     name = fields.Char(string="Name", required=True, translate=True)
     company_id = fields.Many2one(comodel_name="res.company", string="Company", default=lambda self: self.env.company)
+    partner_ids = fields.Many2many('res.partner', 'rel_module_partner', 'module_id', 'partner_id', 'Clients')
 
 
 class HelpdeskTicketEnvironment(models.Model):

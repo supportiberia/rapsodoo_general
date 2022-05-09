@@ -56,8 +56,8 @@
                             <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
                         </group>
                         <group name="second">
-                            <field name="client_id" options="{'no_create': True}" domain="[('parent_id', '=', False)]"/>
-                            <field name="partner_id" options="{'no_create': True}" domain="[('parent_id', '!=', False)]" required="True"/>
+                            <field name="client_id" options="{'no_create': True}" domain="[('is_company', '=', True)]"/>
+                            <field name="partner_id" options="{'no_create': True}" domain="[('is_company', '=', False), ('parent_id', '!=', False)]" required="True"/>
                             <field name="partner_name" attrs="{'invisible': [('partner_id', '!=', False)]}"/>
                             <field name="partner_email"/>
                             <field name="channel_id" options="{'no_create': True}"/>

@@ -25,12 +25,19 @@ class HelpdeskTicketController(http.Controller):
 
     @http.route("/new/ticket", type="http", auth="user", website=True)
     def create_new_ticket(self, **kw):
-        categories = http.request.env["helpdesk.ticket.category"].search([("active", "=", True)])
-        urgencies = http.request.env["helpdesk.ticket.urgency"].search([("active", "=", True)])
-        modules = http.request.env["helpdesk.ticket.module"].search([("active", "=", True)])
-        environments = http.request.env["helpdesk.ticket.environment"].search([("active", "=", True)])
         email = http.request.env.user.email
         name = http.request.env.user.name
+        list_modules = []
+        categories = http.request.env["helpdesk.ticket.category"].search([("active", "=", True)])
+        urgencies = http.request.env["helpdesk.ticket.urgency"].search([("active", "=", True)])
+        partner_id = http.request.env["res.partner"].search([("id", "=", http.request.env.user.partner_id.parent_id.id)], limit=1)
+        modules = http.request.env["helpdesk.ticket.module"].search([("active", "=", True)])
+        for module in modules:
+            for partner in module.partner_ids:
+                if partner.id == partner_id.id:
+                    list_modules.append(module.id)
+        modules = modules.filtered(lambda e: e.id in list_modules or e.name == '-')
+        environments = http.request.env["helpdesk.ticket.environment"].search([("active", "=", True)])
         return http.request.render(
             "helpdesk_pro.portal_create_ticket",
             {"categories": categories, "email": email, "name": name, "urgencies": urgencies, "modules": modules, "environments": environments},
