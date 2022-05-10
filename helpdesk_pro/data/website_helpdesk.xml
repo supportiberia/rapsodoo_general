@@ -97,14 +97,12 @@
             <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
             <field name="email_to">{{ (object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') }}</field>
             <field name="body_html" type="xml">
-                <div style="margin: 0px; padding: 0px;">
-                    <p style="margin: 0px; padding: 0px;">
-                        Hello {{object.partner_id.name}}.<br/>
-                        Ticket (reference <a t-attf-href="/my/ticket/{{object.id}}"><t t-out="object.number or ''"># </t></a>) has been closed.<br/><br/>
-                        If you have any further questions or comments, do not hesitate to contact us through your personal area<br/><br/>
-                        Kind regards,<br/><br/>
-                        <t t-out="object.team_id.name or 'Support'"> Team</t>.
-                    </p>
+                <div>
+                    Hello {{object.partner_id.name}}.<br/>
+                    Ticket (reference <a t-attf-href="/my/ticket/{{object.id}}"><t t-out="object.number or ''"># </t></a>) has been closed.<br/><br/>
+                    If you have any further questions or comments, do not hesitate to contact us through your personal area<br/><br/>
+                    Kind regards,<br/><br/>
+                    <t t-out="object.team_id.name or 'Support'"> Team</t>.
                 </div>
             </field>
             <field name="lang">{{ object.partner_id.lang or object.user_id.lang or user.lang }}</field>
@@ -139,15 +137,13 @@
             <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted) }}</field>
             <field name="email_to">{{ (object.partner_email if not object.sudo().partner_id.email or object.sudo().partner_id.email != object.partner_email else '') }}</field>
             <field name="body_html" type="xml">
-                <div style="margin: 0px; padding: 0px;">
-                    <p style="margin: 0px; padding: 0px;">
-                        This automatic message informs you that the technician in charge of your ticket (reference <a t-attf-href="/my/ticket/{{object.id}}"><t t-out="object.number or ''"># </t></a>) is waiting for some action from you.<br/>
-                        Access your personal area of our portal and check what is required by the technician.<br/>
-                        If you have any further questions or comments, do not hesitate to contact us through your personal area<br/><br/>
-                        Thank you for your cooperation.<br/>
-                        Kind regards,<br/><br/>
-                        <t t-out="object.team_id.name or 'Support'"> Team</t>.
-                    </p>
+                <div>
+                    This automatic message informs you that the technician in charge of your ticket (reference <a t-attf-href="/my/ticket/{{object.id}}"><t t-out="object.number or ''"># </t></a>) is waiting for some action from you.<br/>
+                    Access your personal area of our portal and check what is required by the technician.<br/>
+                    If you have any further questions or comments, do not hesitate to contact us through your personal area<br/><br/>
+                    Thank you for your cooperation.<br/>
+                    Kind regards,<br/><br/>
+                    <t t-out="object.team_id.name or 'Support'"> Team</t>.
                 </div>
             </field>
             <field name="lang">{{ object.partner_id.lang or object.user_id.lang or user.lang }}</field>

@@ -185,7 +185,7 @@ class HelpdeskTicket(models.Model):
             mail_mail_obj = self.env['mail.mail']
             msg_id = self.env['mail.mail'].sudo().create(values)
             if msg_id:
-                mail_mail_obj.send(msg_id)
+                msg_id.send()
         return True
 
     def get_portal_url(self):
