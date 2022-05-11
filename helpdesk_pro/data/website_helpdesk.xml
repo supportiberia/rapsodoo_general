@@ -262,15 +262,6 @@
             <field name="lang">${object.partner_id.lang or object.user_id.lang or user.lang}</field>
             <field name="auto_delete" eval="False"/>
         </record>
-
-        <!-- Sequence -->
-        <record id="helpdesk_ticket_sequence" model="ir.sequence">
-            <field name="name">Helpdesk Ticket Sequence</field>
-            <field name="code">helpdesk.ticket.sequence</field>
-            <field name="prefix">TICK</field>
-            <field name="padding">5</field>
-            <field name="company_id" />
-        </record>
         <!-- Stages -->
 
         <record id="helpdesk_ticket_stage_new" model="helpdesk.ticket.stage">

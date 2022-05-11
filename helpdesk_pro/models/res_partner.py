@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import models, fields, api, tools, _
 
 
 class Partner(models.Model):
@@ -8,6 +8,26 @@ class Partner(models.Model):
     helpdesk_ticket_count = fields.Integer(compute="_compute_helpdesk_ticket_count", string="Ticket count")
     helpdesk_ticket_active_count = fields.Integer(compute="_compute_helpdesk_ticket_count", string="Ticket active count")
     helpdesk_ticket_count_string = fields.Char(compute="_compute_helpdesk_ticket_count", string="Tickets")
+
+    @api.model
+    def create(self, vals):
+        create_sequence = self.env['ir.sequence']
+        res = super(Partner, self).create(vals)
+        if res.company_type == 'company':
+            dict_seq = {
+                'name': 'Helpdesk Ticket',
+                'code': 'helpdesk.ticket',
+                'prefix': 'TICK/',
+                'padding': 5,
+                'partner_id': res.id,
+                'company_id': self.env.company.id,
+            }
+            dict_seq['name'] += ' ' + res.name.split(' ')[0][:3].upper()
+            dict_seq['code'] += '.' + res.name.split(' ')[0][:3].lower()
+            dict_seq['prefix'] += res.name.split(' ')[0][:3].upper() + '/'
+            if dict_seq:
+                create_sequence.create(dict_seq)
+        return res
 
     def _compute_helpdesk_ticket_count(self):
         for record in self:
@@ -41,3 +61,10 @@ class User(models.Model):
                 record.count_ticket = len(obj_ticket_ids)
 
     count_ticket = fields.Integer('Ticket by user', compute='_get_my_tickets')
+
+
+class IrSequence(models.Model):
+    _inherit = 'ir.sequence'
+
+    partner_id = fields.Many2one('res.partner', 'Client')
+

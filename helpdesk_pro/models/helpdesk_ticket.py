@@ -182,7 +182,6 @@ class HelpdeskTicket(models.Model):
             values['email_from'] = data_compose['email_from']
             values['reply_to'] = data_compose['email_from']
             values['res_id'] = data_compose['res_id']
-            mail_mail_obj = self.env['mail.mail']
             msg_id = self.env['mail.mail'].sudo().create(values)
             if msg_id:
                 msg_id.send()
@@ -217,10 +216,12 @@ class HelpdeskTicket(models.Model):
             ticket.copy()
 
     def _prepare_ticket_number(self, values):
-        seq = self.env["ir.sequence"]
-        if "company_id" in values:
-            seq = seq.with_company(values["company_id"])
-        return seq.next_by_code("helpdesk.ticket.sequence") or "/"
+        seq = self.env["ir.sequence"].search([('code', 'like', 'helpdesk')])
+        if seq and "client_id" in values:
+            seq = seq.filtered(lambda e: e.partner_id.id == values["client_id"])
+            if "company_id" in values:
+                seq = seq.with_company(values["company_id"])
+        return seq.next_by_code(seq.code) or "/"
 
     # def _track_template(self, tracking):
     #     res = super()._track_template(tracking)
