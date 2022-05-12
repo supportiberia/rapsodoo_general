@@ -243,9 +243,9 @@
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="model">project.project</field>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='name']" position="attributes">
-                <attribute name="readonly">True</attribute>
-            </xpath>
+<!--            <xpath expr="//field[@name='name']" position="attributes">-->
+<!--                <attribute name="readonly">True</attribute>-->
+<!--            </xpath>-->
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="count_hours" required="True"/>
                 <field name="diff_hours"/>
