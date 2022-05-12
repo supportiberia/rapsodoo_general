@@ -633,8 +633,6 @@ class Project(models.Model):
     @api.model
     def create(self, vals):
         request = super(Project, self).create(vals)
-        if request.name:
-            request.name = request.name + '´s support pack - ' + str(request.count_hours) + ' hrs'
         if request._context.get('active_id'):
             obj_ticket = self.env['helpdesk.ticket'].search([('id', '=', request._context.get('active_id'))], limit=1)
             if obj_ticket:
