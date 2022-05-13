@@ -51,7 +51,7 @@
                     </group>
                     <notebook>
                         <page name="members" string="Team Members">
-                            <field name="user_ids" widget="many2many" options="{'not_delete': True}">
+                            <field name="user_ids" widget="many2many" options="{'not_delete': True}" domain="[('partner_id.is_company', '=', False), ('partner_id.parent_id', '=', False)]">
                                 <kanban quick_create="false" create="true" delete="true">
                                     <field name="id" />
                                     <field name="name" />
