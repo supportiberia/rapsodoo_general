@@ -24,6 +24,12 @@ class HelpdeskTeam(models.Model):
     todo_ticket_count_unassigned = fields.Integer(string="Number of tickets unassigned", compute="_compute_todo_tickets")
     todo_ticket_count_unattended = fields.Integer(string="Number of tickets unattended", compute="_compute_todo_tickets")
     todo_ticket_count_high_priority = fields.Integer(string="Number of tickets in high priority", compute="_compute_todo_tickets")
+    type_assigned = fields.Selection(
+        selection=[
+            ("normal", "Standard"),
+            ("equitable", "Equitable"),
+        ],
+        string="Type Assignation", default="normal")
     resource_calendar_id = fields.Many2one('resource.calendar', 'Working Hours', default=lambda self: self.env.company.resource_calendar_id, domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
 
     @api.depends("ticket_ids", "ticket_ids.stage_id")

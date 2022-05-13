@@ -157,9 +157,11 @@ class HelpdeskTicket(models.Model):
 
     def set_user_id(self):
         if self.team_id and self.team_id.user_ids:
-            list_users = [{'user': user, 'count_ticket': user.count_ticket} for user in self.team_id.user_ids]
-            val_min = min(list_users, key=lambda x: x['count_ticket'])
-            member = val_min['user'] if val_min else self.team_id.user_ids[0]
+            member = self.team_id.user_id
+            if self.team_id.type_assigned == 'equitable':
+                list_users = [{'user': user, 'count_ticket': user.count_ticket} for user in self.team_id.user_ids]
+                val_min = min(list_users, key=lambda x: x['count_ticket'])
+                member = val_min['user'] if val_min else self.team_id.user_ids[0]
             self.write({'user_id': member.id})
 
     def compose_email_message(self, ticket):
@@ -196,7 +198,7 @@ class HelpdeskTicket(models.Model):
             default = {}
         if "number" not in default:
             default["number"] = self._prepare_ticket_number(default)
-        res = super().copy(default)
+        res = super(HelpdeskTicket, self).copy_data(default=default)[0]
         return res
 
     def write(self, vals):
