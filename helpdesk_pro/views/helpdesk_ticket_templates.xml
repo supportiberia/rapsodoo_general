@@ -99,7 +99,7 @@
                             <h5 class="d-flex mb-1 mb-md-0">
                                 <div class="col-9 text-truncate">
                                     <span t-field="ticket.name"/>
-                                    <small class="text-muted "> (#<span t-field="ticket.id"/>)</small>
+                                    <small class="text-muted "> (#<span t-field="ticket.number"/>)</small>
                                 </div>
                                 <div class="col-3 text-right">
                                     <small class="text-right">Status:</small>
@@ -159,13 +159,12 @@
                             <em class="text-muted"><small>No description</small></em>
                         </div>
                     </div>
-                    <div class="o_portal_messages_container mt32">
+                    <div class="o_portal_messages_container">
                         <h4>Message and communication history</h4>
                         <t t-call="portal.message_thread">
                             <t t-set="object" t-value="ticket"/>
                             <t t-set="pid" t-value="pid"/>
                             <t t-set="hash" t-value="hash"/>
-                            <t t-set="disable_composer" t-value="ticket.stage_id.closed"/>
                         </t>
                     </div>
                 </t>
@@ -313,7 +312,6 @@
                                         <span id="s_website_form_result"></span>
                                     </div>
                                 </div>
-
                             </div>
                         </form>
                     </div>
