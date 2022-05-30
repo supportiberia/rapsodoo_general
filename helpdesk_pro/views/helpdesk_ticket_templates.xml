@@ -148,6 +148,7 @@
                                 </div>
                                 <div class="col pl-sm-0">
                                     <div t-field="ticket.user_id" t-options='{"widget": "contact", "fields": ["name", "email"], "no_marker": true}'/>
+                                    <a href="#discussion" class="small"><i class="fa fa-comment"></i> Send message</a>
                                 </div>
                             </div>
                         </div>
@@ -159,12 +160,10 @@
                             <em class="text-muted"><small>No description</small></em>
                         </div>
                     </div>
-                    <div class="o_portal_messages_container">
+                    <div class="o_portal_messages_container mt-4">
                         <h4>Message and communication history</h4>
                         <t t-call="portal.message_thread">
                             <t t-set="object" t-value="ticket"/>
-                            <t t-set="pid" t-value="pid"/>
-                            <t t-set="hash" t-value="hash"/>
                         </t>
                     </div>
                 </t>
