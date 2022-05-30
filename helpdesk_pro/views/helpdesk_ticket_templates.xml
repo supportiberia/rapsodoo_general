@@ -164,6 +164,8 @@
                         <h4>Message and communication history</h4>
                         <t t-call="portal.message_thread">
                             <t t-set="object" t-value="ticket"/>
+                            <t t-set="pid" t-value="pid"/>
+                            <t t-set="hash" t-value="hash"/>
                         </t>
                     </div>
                 </t>
