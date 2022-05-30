@@ -138,9 +138,9 @@ class HelpdeskTicket(models.Model):
     @api.model
     def create(self, vals):
         if vals.get("number", "/") == "/":
-            vals["number"] = self._prepare_ticket_number(vals)
             vals["color"] = 7
             res = super(HelpdeskTicket, self).create(vals)
+            res.number = self._prepare_ticket_number(res)
             if not res.project_id:
                 res.set_project_id()
             if res.team_id and not res.user_id:
@@ -217,13 +217,13 @@ class HelpdeskTicket(models.Model):
         for ticket in self.browse(self.env.context["active_ids"]):
             ticket.copy()
 
-    def _prepare_ticket_number(self, values):
+    def _prepare_ticket_number(self, res):
         seq = self.env["ir.sequence"].search([('code', 'like', 'helpdesk')])
-        if seq and "client_id" in values:
-            seq = seq.filtered(lambda e: e.partner_id.id == values["client_id"])
-            if "company_id" in values:
-                seq = seq.with_company(values["company_id"])
-        return seq.next_by_code(seq.code) or "/"
+        if res.client_id:
+            seq = seq.filtered(lambda e: e.partner_id.id == res.client_id.id)
+            if res.company_id:
+                seq = seq.with_company(res.company_id.id)
+        return seq[0].next_by_code(seq.code) or "/"
 
     # def _track_template(self, tracking):
     #     res = super()._track_template(tracking)

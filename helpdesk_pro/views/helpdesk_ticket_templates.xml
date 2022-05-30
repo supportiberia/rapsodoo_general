@@ -166,6 +166,7 @@
                             <t t-set="object" t-value="ticket"/>
                             <t t-set="pid" t-value="pid"/>
                             <t t-set="hash" t-value="hash"/>
+                            <t t-set="disable_composer" t-value="ticket.stage_id.closed"/>
                         </t>
                     </div>
                 </t>
