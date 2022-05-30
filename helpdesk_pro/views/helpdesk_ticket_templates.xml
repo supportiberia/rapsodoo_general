@@ -303,7 +303,7 @@
                                             <span class="s_website_form_label_content">Attachment(s)</span>
                                         </label>
                                         <div class="col-sm col-xs-10">
-                                            <input id="attachment" type="file" name="attachment" class="form-control s_website_form_input" multiple="true" max="3" accept=".jpg, .jpeg, .png" total-max-size="5120"/>
+                                            <input id="attachment" type="file" name="attachment" class="form-control s_website_form_input" multiple="true" max="3" accept=".jpg, .jpeg, .png"/>
                                         </div>
                                     </div>
                                 </div>
