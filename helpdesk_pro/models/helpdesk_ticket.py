@@ -512,7 +512,7 @@ class HelpdeskTicket(models.Model):
         action['context'] = ctx
         return action
 
-    @api.constrains('stage_id')
+    @api.constrains('stage_id', 'dedicated_time', 'count_real_day', 'count_day')
     def _check_values_report(self):
         for record in self:
             record.report_count_day = record.count_day
