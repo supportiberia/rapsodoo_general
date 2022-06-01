@@ -184,6 +184,7 @@
             <pivot string="Pivot Analysis" disable_linking="True" sample="1">
                 <field name="team_id" type="row"/>
                 <field name="client_id" type="row"/>
+                <field name="number" type="row"/>
                 <field name="stage_id" type="col"/>
                 <field name="report_count_day" type="measure" string="Duration (days)"/>
                 <field name="report_count_real_day" type="measure" string="Duration real (days)"/>

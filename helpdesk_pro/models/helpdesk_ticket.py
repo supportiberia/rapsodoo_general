@@ -470,7 +470,7 @@ class HelpdeskTicket(models.Model):
                 val_waiting += val_w
             record.count_real_day = record.count_day - val_waiting
             if record.task_id:
-                time_lines = self.env['account.analytic.line'].search([('task_id', '=', record.task_id.id)])
+                time_lines = self.env['account.analytic.line'].search([('task_id', 'in', record.project_id.task_ids.ids)])
                 record.dedicated_time = sum([line.unit_amount for line in time_lines])
 
     def check_weekend(self, end_date, entry_date):

@@ -22,7 +22,7 @@
 
 {
     'name': 'Helpdesk Pro',
-    'version': '15.1.1.0.9',
+    'version': '15.1.1.0.10',
     'category': 'Helpdesk',
     'summary': """Support, tickets, issues, bugs.""",
     'description': """Improvement to the Helpdesk Tool: support, tickets, issues, bugs.""",
