@@ -1,6 +1,7 @@
 from odoo import models, fields, api, tools, _
 from odoo.exceptions import UserError, AccessError
 from datetime import datetime, timedelta, date
+from odoo.exceptions import ValidationError
 
 
 TICKET_PRIORITY_U = [
@@ -116,8 +117,19 @@ class HelpdeskTicket(models.Model):
     report_count_real_day = fields.Float('Report Duration real', help='Duration real = duration planned - time waiting')
     report_dedicated_time = fields.Float('Report Dedicated time', help='Dedicated time = Hours by task')
 
-    def assign_to_me(self):
-        self.write({"user_id": self.env.user.id})
+    @api.model
+    def create(self, vals):
+        res = super(HelpdeskTicket, self).create(vals)
+        if vals.get("number", "/") == "/":
+            vals["color"] = 7
+            res.number = self._prepare_ticket_number(res)
+            if not res.project_id:
+                res.set_project_id()
+            if res.team_id and not res.user_id:
+                res.set_user_id()
+            mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.new_ticket_request_email_template')
+            self._create_mail_begin(mail_template, res)
+        return res
 
     @api.onchange("partner_id")
     def _onchange_partner_id(self):
@@ -135,19 +147,8 @@ class HelpdeskTicket(models.Model):
         else:
             return {"domain": {"user_id": []}}
 
-    @api.model
-    def create(self, vals):
-        if vals.get("number", "/") == "/":
-            vals["color"] = 7
-            res = super(HelpdeskTicket, self).create(vals)
-            res.number = self._prepare_ticket_number(res)
-            if not res.project_id:
-                res.set_project_id()
-            if res.team_id and not res.user_id:
-                res.set_user_id()
-            mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.new_ticket_request_email_template')
-            self._create_mail_begin(mail_template, res)
-        return res
+    def assign_to_me(self):
+        self.write({"user_id": self.env.user.id})
 
     def set_project_id(self):
         obj_project_id = self.env['project.project'].search([('partner_id', '=', self.client_id.id)], limit=1)
@@ -219,9 +220,15 @@ class HelpdeskTicket(models.Model):
 
     def _prepare_ticket_number(self, res):
         seq = self.env["ir.sequence"].search([('code', 'like', 'helpdesk')])
+        if not seq:
+            raise ValidationError(_("The company has not sequence assigne. Please contact with the Admin"))
         if res.client_id:
             seq = seq.filtered(lambda e: e.partner_id.id == res.client_id.id)
-            if res.company_id:
+            if not seq:
+                raise ValidationError(_("Sorry!! You have not permission for this operation. \n "
+                                        "There are not sequence related to your company."
+                                        " Please contact with the Admin"))
+            elif res.company_id:
                 seq = seq.with_company(res.company_id.id)
         return seq[0].next_by_code(seq.code) or "/"
 
@@ -329,15 +336,28 @@ class HelpdeskTicket(models.Model):
         }
 
     def action_open_task(self):
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Task',
-            'res_model': 'project.task',
-            'view_mode': 'tree,kanban,form',
-            'domain': [('id', '=', self.task_id.id)],
-            'context': ({'default_project_id': self.project_id.id,
-                         'default_partner_id': self.client_id.id})
-        }
+        self.ensure_one()
+        # Getting the existing task related with the ticket
+        task = self.env['project.task'].search([('ticket_id', '=', self.id)])
+        action = self.env['ir.actions.actions']._for_xml_id('project.action_view_all_task')
+        form_view = [(self.env.ref('project.view_task_form2').id, 'form')]
+        if 'views' in action:
+            action['views'] = form_view + [(state, view) for state, view in action['views'] if view != 'form']
+        else:
+            action['views'] = form_view
+        if len(task) == 1:
+            # If exist a task related
+            # Call the form with the data charged
+            action['domain'] = [('ticket_id', '=', self.id)]
+            action['res_id'] = task.ids[0]
+            action['context'] = {'create': False}
+        if not task:
+            # If not exist the any task related
+            # Charge the form with some values as default
+            action['context'] = {'default_ticket_id': self.id,
+                                 'default_project_id': self.project_id.id,
+                                 'default_partner_id': self.client_id.id}
+        return action
 
     def general_update(self, record):
         dict_wait = {
@@ -684,17 +704,22 @@ class Task(models.Model):
 
     @api.model
     def create(self, vals):
-        ticket_id = False
         request = super(Task, self).create(vals)
-        if len([ticket.task_id for ticket in request.project_id.ticket_ids]) <= 1:
-            if request._context.get('active_model') == 'project.project':
-                ticket_ids = [ticket.id for ticket in request.project_id.ticket_ids if not ticket.task_id] if request.project_id.ticket_ids else False
-                if ticket_ids:
-                    ticket_id = ticket_ids[0]
-            if request._context.get('active_model') == 'helpdesk.ticket':
-                ticket_id = request._context.get('active_id')
-        obj_ticket = self.env['helpdesk.ticket'].search([('id', '=', ticket_id), ('task_id', '=', False)], limit=1)
-        if obj_ticket:
-            obj_ticket.task_id = request.id
+        # TODO REVIEW THIS CODE TO UNDERSTAND THE POINT
+        # ticket_id = False
+        # if len([ticket.task_id for ticket in request.project_id.ticket_ids]) <= 1:
+        #     if request._context.get('active_model') == 'project.project':
+        #         ticket_ids = [ticket.id for ticket in request.project_id.ticket_ids if not ticket.task_id] if request.project_id.ticket_ids else False
+        #         if ticket_ids:
+        #             ticket_id = ticket_ids[0]
+        #     if request._context.get('active_model') == 'helpdesk.ticket':
+        #         ticket_id = request._context.get('active_id')
+        # obj_ticket = self.env['helpdesk.ticket'].search([('id', '=', ticket_id), ('task_id', '=', False)], limit=1)
+        # if obj_ticket:
+        #     obj_ticket.task_id = request.id
+        # Verify if already exist a task related with the same ticket
+        task = self.search_count([('ticket_id', '=', request.ticket_id.id), ('ticket_id', '!=', False)])
+        if task > 1:
+            raise ValidationError(_('Sorry only can be 1 task related with each ticket'))
         return request
 

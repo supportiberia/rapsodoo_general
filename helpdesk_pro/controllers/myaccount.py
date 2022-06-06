@@ -8,10 +8,16 @@ from odoo.addons.portal.controllers.portal import CustomerPortal, pager as porta
 
 
 class CustomerPortalHelpdesk(CustomerPortal):
+
     def _prepare_portal_layout_values(self):
         values = super()._prepare_portal_layout_values()
         partner = request.env.user.partner_id
+        level = partner.helpdesk_level
         ticket_count = request.env["helpdesk.ticket"].search_count([("partner_id", "child_of", partner.id)])
+        if level == 'manager':
+            client = request.env.user.partner_id.parent_id.id
+            ticket_count = request.env["helpdesk.ticket"].search_count([('client_id', '!=', False),
+                                                                        ('client_id', '=', client)])
         values["ticket_count"] = ticket_count
         return values
 
@@ -25,6 +31,11 @@ class CustomerPortalHelpdesk(CustomerPortal):
             raise
         return ticket_sudo
 
+    def _helpdesk_ticket_manager_access(self, ticket_id):
+        ticket = request.env["helpdesk.ticket"].browse([ticket_id])
+        ticket_sudo = ticket.sudo()
+        return ticket_sudo
+
     @http.route(
         ["/my/tickets", "/my/tickets/page/<int:page>"],
         type="http",
@@ -35,8 +46,11 @@ class CustomerPortalHelpdesk(CustomerPortal):
         values = self._prepare_portal_layout_values()
         HelpdesTicket = request.env["helpdesk.ticket"]
         partner = request.env.user.partner_id
-        domain = [("partner_id", "child_of", partner.id)]
-
+        level = partner.helpdesk_level
+        client = request.env.user.partner_id.parent_id.id
+        domain = [('client_id', '!=', False), ('client_id', '=', client)]
+        if level == 'user':
+            domain = [("partner_id", "child_of", partner.id)]
         searchbar_sortings = {
             "date": {"label": _("Newest"), "order": "create_date desc"},
             "name": {"label": _("Name"), "order": "name"},
@@ -98,10 +112,14 @@ class CustomerPortalHelpdesk(CustomerPortal):
 
     @http.route(["/my/ticket/<int:ticket_id>"], type="http", website=True)
     def portal_my_ticket(self, ticket_id=None, **kw):
-        try:
-            ticket_sudo = self._helpdesk_ticket_check_access(ticket_id)
-        except AccessError:
-            return request.redirect("/my")
+        partner = request.env.user.partner_id
+        level = partner.helpdesk_level
+        ticket_sudo = self._helpdesk_ticket_manager_access(ticket_id)
+        if level == 'user':
+            try:
+                ticket_sudo = self._helpdesk_ticket_check_access(ticket_id)
+            except AccessError:
+                return request.redirect("/my")
         values = self._ticket_get_page_view_values(ticket_sudo, **kw)
         return request.render("helpdesk_pro.portal_helpdesk_ticket_page", values)
 
