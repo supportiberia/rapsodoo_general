@@ -8,6 +8,13 @@ class Partner(models.Model):
     helpdesk_ticket_count = fields.Integer(compute="_compute_helpdesk_ticket_count", string="Ticket count")
     helpdesk_ticket_active_count = fields.Integer(compute="_compute_helpdesk_ticket_count", string="Ticket active count")
     helpdesk_ticket_count_string = fields.Char(compute="_compute_helpdesk_ticket_count", string="Tickets")
+    helpdesk_level = fields.Selection(
+        string='Helpdesk Level',
+        selection=[('manager', "Manager"), ('user', "User")],
+        default='user',
+        help="Manager has the permission to access to all the client ticket",
+        required=True
+    )
 
     @api.model
     def create(self, vals):

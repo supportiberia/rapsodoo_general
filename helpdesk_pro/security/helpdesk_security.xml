@@ -20,20 +20,28 @@
                 eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"
             />
         </record>
+                <!-- Some modules (i.e. sale) restrict the access for some users
+        We want the readonly group to still have the read access on all moves.-->
+        <record id="res_partner_read_portal_user" model="ir.rule">
+            <field name="name">Res Partner Portal User</field>
+            <field name="model_id" ref="model_res_partner"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read" eval="True"/>
+        </record>
     </data>
-    <data noupdate="1">
+
+    <data noupdate="0">
         <record id="helpesk_ticket_personal_rule" model="ir.rule">
             <field name="name">Personal Tickets</field>
             <field ref="model_helpdesk_ticket" name="model_id" />
-            <field
-                name="domain_force"
-            >['|',('user_id','=',user.id),('user_id','=',False)]</field>
+            <field name="domain_force"></field>
             <field name="groups" eval="[(4, ref('group_helpdesk_user_own'))]" />
         </record>
         <record id="helpdesk_ticket_user_rule" model="ir.rule">
             <field name="name">All Tickets</field>
             <field ref="model_helpdesk_ticket" name="model_id" />
-            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="domain_force">[('client_id', '=', user.partner_id.parent_id.id)]</field>
             <field name="groups" eval="[(4, ref('group_helpdesk_user'))]" />
         </record>
         <!-- Company Rules -->
@@ -41,57 +49,43 @@
             <field name="name">Helpdesk Ticket Company Rule</field>
             <field name="model_id" ref="model_helpdesk_ticket" />
             <field name="global" eval="True" />
-            <field
-                name="domain_force"
-            >['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
+            <field name="domain_force">['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
         </record>
         <record id="helpdesk_ticket_category_comp_rule" model="ir.rule">
             <field name="name">Helpdesk Category Company Rule</field>
             <field name="model_id" ref="model_helpdesk_ticket_category" />
             <field name="global" eval="True" />
-            <field
-                name="domain_force"
-            >['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
+            <field name="domain_force">['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
         </record>
         <record id="helpdesk_ticket_channel_comp_rule" model="ir.rule">
             <field name="name">Helpdesk Channel Company Rule</field>
             <field name="model_id" ref="model_helpdesk_ticket_channel" />
             <field name="global" eval="True" />
-            <field
-                name="domain_force"
-            >['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
+            <field name="domain_force">['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
         </record>
         <record id="helpdesk_ticket_stage_comp_rule" model="ir.rule">
             <field name="name">Helpdesk Stage Company Rule</field>
             <field name="model_id" ref="model_helpdesk_ticket_stage" />
             <field name="global" eval="True" />
-            <field
-                name="domain_force"
-            >['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
+            <field name="domain_force">['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
         </record>
         <record id="helpdesk_ticket_tag_comp_rule" model="ir.rule">
             <field name="name">Helpdesk Tag Company Rule</field>
             <field name="model_id" ref="model_helpdesk_ticket_tag" />
             <field name="global" eval="True" />
-            <field
-                name="domain_force"
-            >['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
+            <field name="domain_force">['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
         </record>
         <record id="helpdesk_ticket_team_comp_rule" model="ir.rule">
             <field name="name">Helpdesk Team Company Rule</field>
             <field name="model_id" ref="model_helpdesk_ticket_team" />
             <field name="global" eval="True" />
-            <field
-                name="domain_force"
-            >['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
+            <field name="domain_force">['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
         </record>
         <!-- Portal for helpdesk -->
         <record id="helpdesk_ticket_rule_portal" model="ir.rule">
             <field name="name">Portal Personal Tickets</field>
             <field name="model_id" ref="model_helpdesk_ticket" />
-            <field
-                name="domain_force"
-            >[('message_partner_ids','child_of',[user.commercial_partner_id.id])]</field>
+            <field name="domain_force">[('message_partner_ids','child_of',[user.commercial_partner_id.id])]</field>
             <field name="groups" eval="[(4, ref('base.group_portal'))]" />
         </record>
     </data>

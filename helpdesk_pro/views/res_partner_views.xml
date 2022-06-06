@@ -12,6 +12,9 @@
                     <field name="helpdesk_ticket_count_string" widget="statinfo" />
                 </button>
             </div>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="helpdesk_level"/>
+            </xpath>
         </field>
     </record>
 </odoo>
