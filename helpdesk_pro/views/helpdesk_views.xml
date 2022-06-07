@@ -51,8 +51,8 @@
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                             <field name="resource_calendar_id" required="1"/>
                             <field name="check_tm"/>
-                            <field name="project_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
-                            <field name="task_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
+                            <field name="project_id" invisible="1" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
+                            <field name="task_id" invisible="1" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
                             <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
                         </group>
                         <group name="second">
@@ -250,6 +250,19 @@
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="count_hours" required="True"/>
                 <field name="diff_hours"/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <!-- View Form project.task -->
+    <record id="project_task_inherit_view_form2" model="ir.ui.view">
+        <field name="name">project.task.inherit.view.form2</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="model">project.task</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='parent_id']" position="after">
+                <field name="ticket_id" options="{'no_create': True, 'no_open': True}"/>
             </xpath>
         </field>
     </record>

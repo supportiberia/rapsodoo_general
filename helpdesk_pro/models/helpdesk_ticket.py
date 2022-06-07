@@ -232,20 +232,6 @@ class HelpdeskTicket(models.Model):
                 seq = seq.with_company(res.company_id.id)
         return seq[0].next_by_code(seq.code) or "/"
 
-    # def _track_template(self, tracking):
-    #     res = super()._track_template(tracking)
-    #     ticket = self[0]
-    #     if "stage_id" in tracking and ticket.stage_id.mail_template_id:
-    #         res["stage_id"] = (
-    #             ticket.stage_id.mail_template_id,
-    #             {
-    #                 "auto_delete_message": True,
-    #                 "subtype_id": self.env["ir.model.data"]._xmlid_to_res_id("mail.mt_note"),
-    #                 "email_layout_xmlid": "mail.mail_notification_light",
-    #             },
-    #         )
-    #     return res
-
     @api.model
     def message_new(self, msg, custom_values=None):
         """Override message_new from mail gateway so we can set correct
@@ -705,18 +691,7 @@ class Task(models.Model):
     @api.model
     def create(self, vals):
         request = super(Task, self).create(vals)
-        # TODO REVIEW THIS CODE TO UNDERSTAND THE POINT
-        # ticket_id = False
-        # if len([ticket.task_id for ticket in request.project_id.ticket_ids]) <= 1:
-        #     if request._context.get('active_model') == 'project.project':
-        #         ticket_ids = [ticket.id for ticket in request.project_id.ticket_ids if not ticket.task_id] if request.project_id.ticket_ids else False
-        #         if ticket_ids:
-        #             ticket_id = ticket_ids[0]
-        #     if request._context.get('active_model') == 'helpdesk.ticket':
-        #         ticket_id = request._context.get('active_id')
-        # obj_ticket = self.env['helpdesk.ticket'].search([('id', '=', ticket_id), ('task_id', '=', False)], limit=1)
-        # if obj_ticket:
-        #     obj_ticket.task_id = request.id
+        request.ticket_id.task_id = request.id
         # Verify if already exist a task related with the same ticket
         task = self.search_count([('ticket_id', '=', request.ticket_id.id), ('ticket_id', '!=', False)])
         if task > 1:
