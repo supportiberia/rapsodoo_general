@@ -12,6 +12,7 @@
                     <button name="assign_ticket_waiting" string="Waiting" type="object" class="oe_highlight" attrs="{'invisible': [('check_waiting', '=', True)]}"/>
                     <button name="assign_ticket_resolved" string="Resolved" type="object" class="oe_highlight" attrs="{'invisible': [('check_resolved', '=', True)]}"/>
                     <button name="assign_ticket_cancel" string="Cancel" type="object" attrs="{'invisible': [('check_cancel', '=', True)]}"/>
+                    <button name="assign_ticket_draft" string="Set to Draft" type="object" attrs="{'invisible': [('check_cancel', '!=', True)]}"/>
                     <field name="check_working" invisible="1"/>
                     <field name="check_waiting" invisible="1"/>
                     <field name="check_resolved" invisible="1"/>

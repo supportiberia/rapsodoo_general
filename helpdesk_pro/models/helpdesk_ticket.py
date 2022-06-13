@@ -370,6 +370,26 @@ class HelpdeskTicket(models.Model):
             else:
                 return True
 
+    def assign_ticket_draft(self):
+        for record in self:
+            ok_project = self.check_project_related()
+            if ok_project:
+                dict_update_f = {
+                    'check_working': False,
+                    'check_waiting': False,
+                    'check_resolved': False,
+                    'check_cancel': False,
+                    'check_email': False,
+                    'check_task': False,
+                    'kanban_state': 'normal',
+                    'color': 7
+
+                }
+                record.sudo().write(dict_update_f)
+                obj_stage = self.env['helpdesk.ticket.stage'].search([('key_stage', '=', 'new')], limit=1)
+                if obj_stage:
+                    record.sudo().write({'stage_id': obj_stage.id, 'end_date': datetime.now()})
+
     def assign_ticket_working(self):
         for record in self:
             ok_project = self.check_project_related()
