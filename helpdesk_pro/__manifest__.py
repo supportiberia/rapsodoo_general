@@ -22,9 +22,9 @@
 
 {
     'name': 'Helpdesk Pro',
-    'version': '15.1.1.0.13',
+    'version': '15.1.1.0.14',
     'category': 'Helpdesk',
-    'summary': """Support, tickets, issues, bugs.""",
+    'summary': """Helpdesk Pro: Support, tickets, issues, bugs.""",
     'description': """Improvement to the Helpdesk Tool: support, tickets, issues, bugs.""",
     'license': 'AGPL-3',
     'author': "Todooweb (www.todooweb.com)",
@@ -47,14 +47,8 @@
         'views/helpdesk_ticket_channel_views.xml',
         'views/helpdesk_ticket_tag_views.xml',
         'views/helpdesk_views.xml',
-        # 'views/helpdesk_dashboard_views.xml',
     ],
-    "development_status": "Beta",
-    # 'images': ['static/description/translate_screenshot.png'],
-    # 'live_test_url': 'https://cutt.ly/GRuk6Qu',
     'installable': True,
     'auto_install': False,
     'application': True,
-    # 'price': 12.99,
-    # 'currency': 'EUR',
 }

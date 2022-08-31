@@ -30,7 +30,11 @@ class HelpdeskTeam(models.Model):
             ("equitable", "Equitable"),
         ],
         string="Type Assignation", default="normal")
-    resource_calendar_id = fields.Many2one('resource.calendar', 'Working Hours', default=lambda self: self.env.company.resource_calendar_id, domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
+    resource_calendar_id = fields.Many2one('resource.calendar', 'Working Hours',
+                                           default=lambda self: self.env.company.resource_calendar_id,
+                                           domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
+    response_time = fields.Integer('Response time', default=2,
+                                   help='Response time while the ticket is in "In Progress" status')
 
     @api.depends("ticket_ids", "ticket_ids.stage_id")
     def _compute_todo_tickets(self):
@@ -69,3 +73,9 @@ class HelpdeskTeam(models.Model):
         values["alias_defaults"] = defaults = safe_eval(self.alias_defaults or "{}")
         defaults["team_id"] = self.id
         return values
+
+    def action_view_ticket(self):
+        action = self.env["ir.actions.actions"]._for_xml_id("helpdesk_pro.helpdesk_ticket_action")
+        action['domain'] = [('team_id', '=', self.id)]
+        action['display_name'] = self.name
+        return action

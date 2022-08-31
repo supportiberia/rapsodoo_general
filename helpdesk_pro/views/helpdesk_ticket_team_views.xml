@@ -47,6 +47,12 @@
                         <group name="right">
                             <field name="resource_calendar_id"/>
                             <field name="type_assigned"/>
+                            <label for="response_time" string="Response time"/>
+                            <div class="w-100">
+                                <div class="o_row">
+                                    <field name="response_time"/> (days)
+                                </div>
+                            </div>
                         </group>
                     </group>
                     <notebook>

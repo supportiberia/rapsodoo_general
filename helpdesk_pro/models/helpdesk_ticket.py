@@ -1,6 +1,7 @@
 from odoo import models, fields, api, tools, _
 from odoo.exceptions import UserError, AccessError
 from datetime import datetime, timedelta, date
+from dateutil.relativedelta import relativedelta
 from odoo.exceptions import ValidationError
 
 
@@ -88,7 +89,7 @@ class HelpdeskTicket(models.Model):
     type_urgency = fields.Many2one('helpdesk.ticket.urgency', string='Priority (Client)')
     type_impact = fields.Selection(TICKET_PRIORITY_U, string='Priority (User)')
     client_id = fields.Many2one('res.partner', string='Client', help='Select client company to assigned this ticket')
-    solution = fields.Html('Solution Obs')
+    solution = fields.Html('Solution details / Notes')
     entry_date = fields.Date('Init date', default=fields.Date.context_today, tracking=True)
     end_date = fields.Date('Finish date', tracking=True)
     count_day = fields.Float('Duration (days)', help='Duration planned', tracking=True, compute='_check_duration_project')
@@ -544,6 +545,21 @@ class HelpdeskTicket(models.Model):
             record.report_count_day = record.count_day
             record.report_count_real_day = record.count_real_day
             record.report_dedicated_time = record.dedicated_time
+
+    @api.model
+    def update_state(self):
+        tickets = self.search([('check_working', '=', True)])
+        for ticket in tickets:
+            if ticket.mapped('team_id'):
+                val_days = ticket.mapped('team_id').response_time
+                val_update_days = ticket.last_stage_update.date() + relativedelta(days=val_days)
+                if date.today() == val_update_days:
+                    end_date = val_update_days + relativedelta(days=1)
+                    ticket.activity_schedule('mail.mail_activity_data_todo', end_date,
+                                               _("The ticket %s takes %s days in 'In Progress'.", ticket.number, val_days),
+                                       user_id=ticket.user_id.id or self.env.uid)
+                    # mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.notification_email_progress_ticket_template')
+                    # self._create_mail_begin(mail_template, ticket)
 
 
 class CrossTicket(models.Model):

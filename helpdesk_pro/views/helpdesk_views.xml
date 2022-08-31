@@ -5,7 +5,7 @@
         <field name="name">helpdesk.ticket.form</field>
         <field name="model">helpdesk.ticket</field>
         <field name="arch" type="xml">
-            <form string="Helpdesk Ticket">
+            <form string="Helpdesk Ticket" duplicate="false" import="false">
                 <header>
                     <button string="Assign to me" name="assign_to_me" type="object" attrs="{'invisible' : [('user_id', '!=', False)]}"/>
                     <button name="assign_ticket_working" string="Working" type="object" class="oe_highlight" attrs="{'invisible': [('check_working', '=', True)]}"/>
@@ -49,7 +49,7 @@
                             <field name="type_urgency" required="True" options="{'no_create': True, 'no_open': True}"/>
                             <field name="type_impact" required="True"/>
                             <field name="priority" widget="priority" readonly="True"/>
-                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" attrs="{'required': [('check_waiting', '=', True)]}"/>
                             <field name="resource_calendar_id" required="1"/>
                             <field name="check_tm"/>
                             <field name="project_id" invisible="1" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
@@ -96,8 +96,8 @@
                         <page string="Information" name="description">
                             <h6>Description</h6>
                             <field name="description" class="field_description" placeholder="Description of the ticket..."/>
-                            <h6>Solution details</h6>
-                            <field name="solution" class="field_description" placeholder="Description of the solution..."/>
+                            <h6>Solution details / Notes</h6>
+                            <field name="solution" class="field_description" placeholder="Description of the solution..." attrs="{'required': [('check_waiting', '=', True)]}"/>
                         </page>
                         <page string="Other Information" name="other_info">
                             <group>
@@ -122,7 +122,7 @@
         <field name="name">helpdesk.ticket.view.tree</field>
         <field name="model">helpdesk.ticket</field>
         <field name="arch" type="xml">
-            <tree string="Helpdesk Ticket" sample="1">
+            <tree string="Helpdesk Ticket" sample="1" duplicate="false" import="false">
                 <field name="number"/>
                 <field name="name"/>
                 <field name="partner_id"/>
@@ -130,7 +130,8 @@
                 <field name="user_id"/>
                 <field name="modules_id"/>
                 <field name="priority" widget="priority" readonly="True"/>
-                <field name="activity_ids" widget="list_activity" optional="show"/>
+                <field name="tag_ids" widget="many2many_tags"/>
+                <field name="activity_ids" widget="list_activity" optional="hide"/>
                 <field name="entry_date" widget="date"/>
                 <field name="count_day"/>
                 <field name="count_real_day" invisible="True"/>
@@ -168,8 +169,9 @@
                 <filter string="Today Activities" name="activities_today" domain="[('activity_ids.date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter string="Future Activities" name="activities_upcoming_all" domain="[('activity_ids.date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))]"/>
                 <group expand="0" string="Group By">
-                    <filter string="Partner" name="group_partner" domain="[]" context="{'group_by':'partner_id'}"/>
+                    <filter string="Client" name="group_partner" domain="[]" context="{'group_by':'partner_id'}"/>
                     <filter string="Team" name="group_team" domain="[]" context="{'group_by':'team_id'}"/>
+                    <filter string="Category" name="group_module" domain="[]" context="{'group_by':'modules_id'}"/>
                     <filter string="User" name="group_user" domain="[]" context="{'group_by':'user_id'}"/>
                     <filter string="Stage" name="group_stage" domain="[]" context="{'group_by':'stage_id'}"/>
                 </group>
@@ -194,67 +196,18 @@
         </field>
     </record>
 
-    <!-- View kanban helpdesk.ticket -->
-<!--    <record id="helpdesk_ticket_views_kanban" model="ir.ui.view">-->
-<!--        <field name="name">helpdesk.ticket.view.kanban</field>-->
-<!--        <field name="model">helpdesk.ticket</field>-->
-<!--        <field name="priority">10</field>-->
-<!--        <field name="arch" type="xml">-->
-<!--            <kanban default_group_by="stage_id" class="o_kanban_small_column" sample="1">-->
-<!--                <field name="tag_ids"/>-->
-<!--                <field name="name"/>-->
-<!--                <field name="number"/>-->
-<!--                <field name="color"/>-->
-<!--                <field name="stage_id" options='{"group_by_tooltip": {"description": "Stage Description"}}'/>-->
-<!--                <templates>-->
-<!--                    <t t-name="kanban-box">-->
-<!--                        <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click">-->
-<!--                            <span class="oe_kanban_color_help" t-attf-title="In #{kanban_getcolorname(record.color.raw_value)}" role="img" t-attf-aria-label="In #{kanban_getcolorname(record.color.raw_value)}"/>-->
-<!--                            <div class="o_dropdown_kanban dropdown">-->
-<!--                                <a class="dropdown-toggle o-no-caret btn" role="button" data-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">-->
-<!--                                    <span class="fa fa-ellipsis-v"/>-->
-<!--                                </a>-->
-<!--                                <div class="dropdown-menu" role="menu">-->
-<!--                                    <t t-if="widget.editable"><a type="edit" class="dropdown-item" role="menuitem">Edit</a></t>-->
-<!--                                    <t t-if="widget.deletable"><a type="delete" class="dropdown-item" role="menuitem">Delete</a></t>-->
-<!--                                    <ul class="oe_kanban_colorpicker" data-field="color"/>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                            <div class="oe_kanban_content">-->
-<!--                                <div>-->
-<!--                                    <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>-->
-<!--                                </div>-->
-<!--                                <div>-->
-<!--                                    <h6><field name="number"/></h6>-->
-<!--                                </div>-->
-<!--                                <div>-->
-<!--                                    <field name="client_id"/>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                            <div class="oe_clear"></div>-->
-<!--                        </div>-->
-<!--                    </t>-->
-<!--                </templates>-->
-<!--            </kanban>-->
-<!--        </field>-->
-<!--    </record>-->
-
     <!-- View Form project.project -->
     <record id="project_project_inherit_ticket_pro_form" model="ir.ui.view">
         <field name="name">project.project.inherit.ticket.pro.form</field>
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="model">project.project</field>
         <field name="arch" type="xml">
-<!--            <xpath expr="//field[@name='name']" position="attributes">-->
-<!--                <attribute name="readonly">True</attribute>-->
-<!--            </xpath>-->
             <xpath expr="//field[@name='tag_ids']" position="after">
                 <field name="count_hours" required="True"/>
                 <field name="diff_hours"/>
             </xpath>
         </field>
     </record>
-
 
     <!-- View Form project.task -->
     <record id="project_task_inherit_view_form2" model="ir.ui.view">
@@ -315,6 +268,13 @@
         <field name="name">Helpdesk Ticket</field>
         <field name="res_model">helpdesk.ticket</field>
         <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No tickets found. Let's create one!
+                </p><p>To get things done, use activities and status on tickets. <br/>
+                Chat in real time or by email to collaborate efficiently.
+            </p>
+        </field>
     </record>
     <record id="helpdesk_ticket_reporting_action" model="ir.actions.act_window">
         <field name="name">Reporting</field>
