@@ -357,7 +357,7 @@ class HelpdeskTicket(models.Model):
 
     def check_project_related(self):
         for record in self:
-            if record.check_tm and not record.project_id:
+            if not record.check_tm and not record.project_id:
                 raise UserError(_("Project is required to work on this ticket.\nCreate a project "
                                   "or contact an Administrator."))
             else:
@@ -365,7 +365,7 @@ class HelpdeskTicket(models.Model):
 
     def check_task_related(self):
         for record in self:
-            if record.check_tm and not record.task_id:
+            if not record.check_tm and not record.task_id:
                 raise UserError(_("Task is required to resolve or close work on this ticket.\nCreate a task "
                                   "or contact an Administrator."))
             else:
@@ -416,7 +416,8 @@ class HelpdeskTicket(models.Model):
 
     def assign_ticket_waiting(self):
         ok_project = self.check_project_related()
-        if ok_project:
+        ok_task = self.check_task_related()
+        if ok_project and ok_task:
             ctx = {
                 'default_model': 'helpdesk.ticket',
                 'default_res_id': self.ids[0],
