@@ -56,11 +56,10 @@
                 <thead>
                     <tr t-attf-class="{{'thead-light' if not groupby == 'none' else ''}}">
                         <th>#</th>
-                        <th class="w-80">Name</th>
+                        <th style="width: 80%;">Name</th>
                         <th>By</th>
                         <th>Type</th>
                         <th>Category</th>
-                        <th>Create Date</th>
                         <th>Last Stage Update</th>
                         <th t-if="groupby != 'stage'" class="text-center">Stage</th>
                     </tr>
@@ -72,7 +71,6 @@
                         <td><t t-esc="ticket.partner_id.name"/></td>
                         <td><t t-esc="ticket.category_id.name"/></td>
                         <td><t t-esc="ticket.modules_id.name"/></td>
-                        <td><span t-field="ticket.create_date"/></td>
                         <td><span t-field="ticket.last_stage_update"/></td>
                         <td t-if="groupby != 'stage'" class="text-center"><span class="badge badge-pill badge-info" t-field="ticket.stage_id.name"/></td>
                     </tr>
