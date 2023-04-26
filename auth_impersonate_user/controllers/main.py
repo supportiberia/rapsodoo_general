@@ -1,7 +1,7 @@
 from odoo import http
 from odoo.http import request
 from odoo.service import security
-from odoo.addons.web.controllers.home import Home
+from odoo.addons.web.controllers.main import Home
 import logging
 _logger = logging.getLogger(__name__)
 
