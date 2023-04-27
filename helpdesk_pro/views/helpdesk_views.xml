@@ -79,7 +79,7 @@
                                 </div>
                             </div>
                             <field name="count_real_day"/>
-                            <field name="dedicated_time"/>
+                            <field name="dedicated_time" widget="timesheet_uom"/>
                         </group>
                         <group name="f_addon" string="Data technical">
                             <field name="modules_id" required="True" options="{'no_create': True, 'no_open': True}"/>
@@ -204,8 +204,8 @@
         <field name="model">project.project</field>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='tag_ids']" position="after">
-                <field name="count_hours" required="True"/>
-                <field name="diff_hours"/>
+                <field name="count_hours" required="True" widget="timesheet_uom"/>
+                <field name="diff_hours" widget="timesheet_uom"/>
             </xpath>
         </field>
     </record>

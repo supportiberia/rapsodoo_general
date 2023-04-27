@@ -738,3 +738,7 @@ class Task(models.Model):
             raise ValidationError(_('Sorry only can be 1 task related with each ticket'))
         return request
 
+    @api.onchange('timesheet_ids')
+    def onchange_timesheet_ids(self):
+        if self.timesheet_ids and self.project_id:
+            self.planned_hours = self.project_id.diff_hours
