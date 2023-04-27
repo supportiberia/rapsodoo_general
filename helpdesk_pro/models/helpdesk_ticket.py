@@ -128,6 +128,9 @@ class HelpdeskTicket(models.Model):
                 res.set_project_id()
             if res.team_id and not res.user_id:
                 res.set_user_id()
+            if res.project_id and res.project_id.user_id:
+                manager_id = res.project_id.user_id.partner_id
+                res.message_subscribe(partner_ids=manager_id.ids)
             mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.new_ticket_request_email_template')
             self._create_mail_begin(mail_template, res)
         return res

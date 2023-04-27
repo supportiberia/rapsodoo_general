@@ -52,7 +52,7 @@
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" attrs="{'required': [('check_waiting', '=', True)]}"/>
                             <field name="resource_calendar_id" required="1"/>
                             <field name="check_tm"/>
-                            <field name="project_id" invisible="1" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
+                            <field name="project_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
                             <field name="task_id" invisible="1" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
                             <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
                         </group>
@@ -149,11 +149,12 @@
         <field name="arch" type="xml">
             <search>
                 <field name="number" />
-                <field name="partner_id" />
-                <field name="user_id" />
-                <field name="name" />
-                <field name="tag_ids" />
-                <field name="stage_id" />
+                <field name="partner_id"/>
+                <field name="client_id"/>
+                <field name="user_id"/>
+                <field name="name"/>
+                <field name="tag_ids"/>
+                <field name="stage_id"/>
                 <filter string="Unassigned" name="unassigned" domain="[('user_id','=',False)]"/>
                 <filter string="Open" name="open" domain="[('closed', '=', False )]"/>
                 <filter string="Unattended" name="unattended" domain="[('unattended', '=', True )]"/>
