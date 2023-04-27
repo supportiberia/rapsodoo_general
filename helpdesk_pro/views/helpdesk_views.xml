@@ -5,7 +5,7 @@
         <field name="name">helpdesk.ticket.form</field>
         <field name="model">helpdesk.ticket</field>
         <field name="arch" type="xml">
-            <form string="Helpdesk Ticket">
+            <form string="Helpdesk Ticket" duplicate="false">
                 <header>
                     <button string="Assign to me" name="assign_to_me" type="object" attrs="{'invisible' : [('user_id', '!=', False)]}"/>
                     <button name="assign_ticket_working" string="Working" type="object" class="oe_highlight" attrs="{'invisible': [('check_working', '=', True)]}"/>

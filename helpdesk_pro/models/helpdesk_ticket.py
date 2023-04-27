@@ -121,6 +121,7 @@ class HelpdeskTicket(models.Model):
     @api.model
     def create(self, vals):
         res = super(HelpdeskTicket, self).create(vals)
+        list_follower = []
         if vals.get("number", "/") == "/":
             vals["color"] = 7
             res.number = self._prepare_ticket_number(res)
@@ -130,7 +131,14 @@ class HelpdeskTicket(models.Model):
                 res.set_user_id()
             if res.project_id and res.project_id.user_id:
                 manager_id = res.project_id.user_id.partner_id
-                res.message_subscribe(partner_ids=manager_id.ids)
+                list_follower.append(manager_id.id)
+            if res.client_id and res.client_id.child_ids:
+                for child in res.client_id.child_ids:
+                    if child == res.partner_id:
+                        list_follower.append(child.id)
+                    if child.helpdesk_level == 'manager':
+                        list_follower.append(child.id)
+            res.message_subscribe(partner_ids=list_follower)
             mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.new_ticket_request_email_template')
             self._create_mail_begin(mail_template, res)
         return res
