@@ -49,34 +49,56 @@
                 <button name="create_new_ticket" type="action" class="btn btn-primary" style="float: right; margin-right: 5px;">New Ticket</button>
                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
             </form>
-            <div t-if="not tickets" class="alert alert-info">
+            <div t-if="not grouped_tickets" class="alert alert-info">
                 There are currently no Ticket for your account.
             </div>
-            <t t-call="portal.portal_table">
-                <thead>
-                    <tr t-attf-class="{{'thead-light' if not groupby == 'none' else ''}}">
-                        <th>#</th>
-                        <th style="width: 80%;">Name</th>
-                        <th>By</th>
-                        <th>Type</th>
-                        <th>Category</th>
-                        <th t-if="groupby != 'stage'" class="text-center">Stage</th>
-                    </tr>
-                </thead>
-                <t t-foreach="tickets" t-as="ticket">
-                    <tr>
-                        <td class="text-left"><a t-attf-href="/my/ticket/#{ticket.id}"><t t-esc="ticket.number"/></a></td>
-                        <td><t t-esc="ticket.name"/></td>
-                        <td><t t-esc="ticket.partner_id.name"/></td>
-                        <td><t t-esc="ticket.category_id.name"/></td>
-                        <td><t t-esc="ticket.modules_id.name"/></td>
-                        <td t-if="groupby != 'stage'" class="text-center"><span class="badge badge-pill badge-info" t-field="ticket.stage_id.name"/></td>
-                    </tr>
+            <t t-if="grouped_tickets">
+                <t t-call="portal.portal_table">
+                    <t t-foreach="grouped_tickets" t-as="tickets">
+                        <thead>
+                            <tr t-attf-class="{{'thead-light' if not groupby == 'none' else ''}}">
+                                <th class="text-left">#</th>
+                                <th style="width: 80%;">Name</th>
+                                <th t-if="groupby != 'contact'">By</th>
+                                <th t-if="groupby == 'contact'">
+                                    <em class="font-weight-normal text-muted"> Group by contact:</em>
+                                    <span class="text-truncate" t-field="tickets[0].sudo().partner_id.name"/>
+                                </th>
+                                <th t-if="groupby != 'category'">Type</th>
+                                <th t-if="groupby == 'category'">
+                                    <em class="font-weight-normal text-muted"> Group by type ticket:</em>
+                                    <span class="text-truncate" t-field="tickets[0].sudo().category_id.name"/>
+                                </th>
+                                <th t-if="groupby != 'module'">Category</th>
+                                <th t-if="groupby == 'module'">
+                                    <em class="font-weight-normal text-muted"> Group by category:</em>
+                                    <span class="text-truncate" t-field="tickets[0].sudo().modules_id.name"/>
+                                </th>
+                                <th t-if="groupby == 'stage'">
+                                    <em class="font-weight-normal text-muted"> Group by status:</em>
+                                    <span class="text-truncate" t-field="tickets[0].sudo().stage_id.name"/>
+                                </th>
+                                <th t-if="groupby != 'stage'" class="text-center">Stage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="tickets" t-as="ticket">
+                                <tr>
+                                    <td class="text-left"><a t-attf-href="/my/ticket/#{ticket.id}"><t t-esc="ticket.number"/></a></td>
+                                    <td><t t-esc="ticket.name"/></td>
+                                    <td><t t-esc="ticket.partner_id.name"/></td>
+                                    <td><t t-esc="ticket.category_id.name"/></td>
+                                    <td><t t-esc="ticket.modules_id.name"/></td>
+                                    <td t-if="groupby != 'stage'" class="text-center"><span class="badge badge-pill badge-info" t-field="ticket.stage_id.name"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </t>
                 </t>
             </t>
-            <div t-if="pager" class="o_portal_pager text-center">
-                <t t-call="portal.pager"/>
-            </div>
+<!--            <div t-if="pager" class="o_portal_pager text-center">-->
+<!--                <t t-call="portal.pager"/>-->
+<!--            </div>-->
         </t>
     </template>
 
