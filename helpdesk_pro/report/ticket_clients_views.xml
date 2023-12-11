@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <record id="view_report_ticket_client_filter" model="ir.ui.view">
+        <field name="name">report.ticket.client.filter</field>
+        <field name="model">report.ticket.client</field>
+        <field name="arch" type="xml">
+            <search string="Report Ticket Client">
+                <field name="client_name"/>
+                <field name="project_name"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Client" name="group_client_name" domain="[]" context="{'group_by':'client_name'}"/>
+                    <filter string="Project" name="group_project_name" domain="[]" context="{'group_by':'project_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_report_ticket_client_pivot" model="ir.ui.view">
+        <field name="name">view.report.ticket.client.pivot</field>
+        <field name="model">report.ticket.client</field>
+        <field name="arch" type="xml">
+            <pivot string="Report Ticket Client" disable_linking="True" sample="1">
+                <field name="project_name" type="row"/>
+                <field name="client_name" type="row"/>
+                <field name="contracted_hours" type="measure"/>
+                <field name="consumed_hours" type="measure"/>
+                <field name="remaining_hours" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="report_ticket_client_action" model="ir.actions.act_window">
+        <field name="name">Report Ticket Client</field>
+        <field name="res_model">report.ticket.client</field>
+        <field name="view_mode">pivot</field>
+    </record>
+
+    <menuitem name="Report Ticket Client" id="support_menu_item_report3" action="report_ticket_client_action" parent='support_menu_item_report' sequence="2"/>
+
+</odoo>

@@ -52,7 +52,7 @@
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" attrs="{'required': [('check_waiting', '=', True)]}"/>
                             <field name="resource_calendar_id" required="1"/>
                             <field name="check_tm"/>
-                            <field name="project_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
+                            <field name="project_id" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id), ('active_plan', '=', True)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
                             <field name="task_id" invisible="1" options="{'no_create': True, 'no_open': True}" domain="[('partner_id', '=', client_id)]" attrs="{'invisible': [('check_tm', '=', True)]}"/>
                             <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
                         </group>
@@ -80,6 +80,9 @@
                             </div>
                             <field name="count_real_day"/>
                             <field name="dedicated_time" widget="timesheet_uom"/>
+                            <field name="estimated_time" widget="timesheet_uom" required="True"/>
+                            <field name="extra_time" widget="timesheet_uom" decoration-danger="extra_time &gt; estimated_time"/>
+                            <field name="total_time" widget="timesheet_uom" decoration-danger="total_time &gt; estimated_time"/>
                         </group>
                         <group name="f_addon" string="Data technical">
                             <field name="modules_id" required="True" options="{'no_create': True, 'no_open': True}"/>
@@ -136,6 +139,9 @@
                 <field name="count_day"/>
                 <field name="count_real_day" invisible="True"/>
                 <field name="dedicated_time"/>
+                <field name="estimated_time" optional="hide"/>
+                <field name="extra_time" optional="hide"/>
+                <field name="total_time" optional="hide"/>
                 <field name="last_stage_update" optional="hide"/>
                 <field name="stage_id"/>
             </tree>
@@ -207,6 +213,13 @@
                 <field name="count_hours" required="True" widget="timesheet_uom"/>
                 <field name="diff_hours" widget="timesheet_uom"/>
             </xpath>
+            <xpath expr="//field[@name='company_id']" position="before">
+                <field name="active_plan" widget="boolean_toggle"/>
+            </xpath>
+             <xpath expr="//div[@class='oe_title']" position="before">
+                <widget name="web_ribbon" title="Activated" attrs="{'invisible': [('active_plan', '!=', True)]}"/>
+                <widget name="web_ribbon" title="Deactivated" bg_color="bg-info" attrs="{'invisible': [('active_plan', '=', True)]}"/>
+            </xpath>
         </field>
     </record>
 
@@ -218,6 +231,33 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='parent_id']" position="after">
                 <field name="ticket_id" options="{'no_create': True, 'no_open': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="project_task_inherit_view_form2_pro" model="ir.ui.view">
+        <field name="name">project.task.inherit.view.form2.pro</field>
+        <field name="inherit_id" ref="hr_timesheet.view_task_form2_inherited"/>
+        <field name="model">project.task</field>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='project_hours']" position="before">
+                <group name="estimated_ticket">
+                    <span>
+                        <label for="estimated_time"/>
+                    </span>
+                    <field name="estimated_time" widget="timesheet_uom" nolabel="1"/>
+                    <span>
+                        <label class="font-weight-bold" for="extra_time"/>
+                    </span>
+                    <field name="extra_time" widget="timesheet_uom" nolabel="1" decoration-danger="extra_time &gt; estimated_time"/>
+                    <span>
+                        <label class="font-weight-bold" for="total_time"/>
+                    </span>
+                    <field name="total_time" widget="timesheet_uom" nolabel="1" decoration-danger="total_time &gt; estimated_time"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='timesheet_ids']/tree/field[@name='unit_amount']" position="after">
+                <field name="extra_time_line" widget="timesheet_uom" decoration-danger="extra_time_line &gt; 24"/>
             </xpath>
         </field>
     </record>

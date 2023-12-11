@@ -1,8 +1,7 @@
 from odoo import models, fields, api, tools, _
-from odoo.exceptions import UserError, AccessError
+from odoo.exceptions import UserError, AccessError, ValidationError
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
-from odoo.exceptions import ValidationError
 
 
 TICKET_PRIORITY_U = [
@@ -117,6 +116,9 @@ class HelpdeskTicket(models.Model):
     report_count_day = fields.Float('Report Duration (days)', help='Duration planned')
     report_count_real_day = fields.Float('Report Duration real', help='Duration real = duration planned - time waiting')
     report_dedicated_time = fields.Float('Report Dedicated time', help='Dedicated time = Hours by task')
+    estimated_time = fields.Float('Estimated time (hrs)')
+    extra_time = fields.Float(related='task_id.extra_time')
+    total_time = fields.Float(related='task_id.total_time')
 
     @api.model
     def create(self, vals):
@@ -163,10 +165,9 @@ class HelpdeskTicket(models.Model):
         self.write({"user_id": self.env.user.id})
 
     def set_project_id(self):
-        obj_project_id = self.env['project.project'].search([('partner_id', '=', self.client_id.id)], limit=1)
-        project_filter = obj_project_id.filtered(lambda e: e.count_hours != 0 and e.diff_hours != 0) if obj_project_id else False
-        if project_filter:
-            self.write({'project_id': project_filter.id})
+        obj_project_id = self.env['project.project'].search([('partner_id', '=', self.client_id.id), ('active_plan', '=', True)], limit=1)
+        if obj_project_id:
+            self.write({'project_id': obj_project_id.id})
 
     def set_user_id(self):
         if self.team_id and self.team_id.user_ids:
@@ -568,10 +569,8 @@ class HelpdeskTicket(models.Model):
                 if date.today() == val_update_days:
                     end_date = val_update_days + relativedelta(days=1)
                     ticket.activity_schedule('mail.mail_activity_data_todo', end_date,
-                                               _("The ticket %s takes %s days in 'In Progress'.", ticket.number, val_days),
-                                       user_id=ticket.user_id.id or self.env.uid)
-                    # mail_template = self.env['ir.model.data']._xmlid_to_res_id('helpdesk_pro.notification_email_progress_ticket_template')
-                    # self._create_mail_begin(mail_template, ticket)
+                                             _("The ticket %s takes %s days in 'In Progress'.", ticket.number, val_days),
+                                             user_id=ticket.user_id.id or self.env.uid)
 
 
 class CrossTicket(models.Model):
@@ -686,6 +685,9 @@ class Project(models.Model):
     count_hours = fields.Float('Pack', help='Pack Support (hours)')
     diff_hours = fields.Float('Diff.', compute='_call_diff_hours', help='Difference (Pack´s hours - hours spent)')
     ticket_ids = fields.One2many('helpdesk.ticket', 'project_id', 'Ticket')
+    check_alert = fields.Boolean('Alarm')
+    active_plan = fields.Boolean('Pack active', help='Project that defines that this package of hours are those '
+                                                     'that are being used in the allocation of hours.')
 
     @api.model
     def create(self, vals):
@@ -719,6 +721,23 @@ class Project(models.Model):
                 record.name = record.name.split(' ')[:1][0]
                 record.name = record.name + ' support pack - ' + str(record.count_hours) + ' hrs'
 
+    @api.model
+    def update_alert_by_client(self):
+        alert_time = self.env.ref('helpdesk_pro.seq_helpdesk_helpdesk_team1').alert_time
+        projects = self.search([('diff_hours', '<=', alert_time), ('check_alert', '!=', True)])
+        for project in projects.filtered(lambda e: e.diff_hours <= alert_time):
+            end_date = date.today() + relativedelta(days=1)
+            project.activity_schedule('mail.mail_activity_data_todo', end_date, _("The hour packages for client %s is about to expire (%s hours).", project.partner_id.name, alert_time), user_id=project.user_id.id or self.env.uid)
+            project.check_alert = True
+
+    @api.constrains('active_plan', 'partner_id')
+    def check_active_plan(self):
+        env_project = self.env['project.project']
+        for record in self:
+            if record.active_plan and record.partner_id:
+                if env_project.search([('id', '!=', record.id), ('partner_id', '=', record.partner_id.id), ('active_plan', '=', True)]):
+                    raise ValidationError(_('There is already an active pack for the client: %s.') % record.partner_id.name)
+
 
 class Task(models.Model):
     _inherit = "project.task"
@@ -735,6 +754,9 @@ class Task(models.Model):
     planned_hours = fields.Float("Initially Planned Hours",
                                  help='Time planned to achieve this task (including its sub-tasks).', tracking=True,
                                  default=lambda self: self._call_planned_hours())
+    estimated_time = fields.Float(related='ticket_id.estimated_time')
+    extra_time = fields.Float('Extra time (hrs)', help='Time that is not billed to the client.', compute='compute_extra_time_line')
+    total_time = fields.Float('Total time (hrs)', help='= Sum (Extra time + Hours Spent)', compute='compute_total_time')
 
     @api.model
     def create(self, vals):
@@ -750,3 +772,21 @@ class Task(models.Model):
     def onchange_timesheet_ids(self):
         if self.timesheet_ids and self.project_id:
             self.planned_hours = self.project_id.diff_hours
+
+    @api.depends('timesheet_ids')
+    def compute_extra_time_line(self):
+        for record in self:
+            record.extra_time = 0
+            if record.timesheet_ids:
+                record.extra_time = sum(record.timesheet_ids.mapped('extra_time_line'))
+
+    @api.depends('extra_time', 'effective_hours')
+    def compute_total_time(self):
+        for record in self:
+            record.total_time = record.extra_time + record.effective_hours
+
+
+class AccountAnalyticLine(models.Model):
+    _inherit = 'account.analytic.line'
+
+    extra_time_line = fields.Float('Extra time')

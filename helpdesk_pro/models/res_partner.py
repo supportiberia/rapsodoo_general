@@ -37,8 +37,9 @@ class Partner(models.Model):
         return res
 
     def _compute_helpdesk_ticket_count(self):
+        env_ticket = self.env["helpdesk.ticket"]
         for record in self:
-            ticket_ids = self.env["helpdesk.ticket"].search([("partner_id", "child_of", record.id)])
+            ticket_ids = env_ticket.search([("partner_id", "child_of", record.id)])
             record.helpdesk_ticket_count = len(ticket_ids)
             record.helpdesk_ticket_active_count = len(ticket_ids.filtered(lambda ticket: not ticket.stage_id.closed))
             count_active = record.helpdesk_ticket_active_count
@@ -55,6 +56,13 @@ class Partner(models.Model):
             "domain": [("partner_id", "child_of", self.id)],
             "context": self.env.context,
         }
+
+    def _compute_project_count(self):
+        env_project = self.env['project.project']
+        alert_time = self.env.ref('helpdesk_pro.seq_helpdesk_helpdesk_team1').alert_time
+        for record in self:
+            obj_project = env_project.search([('partner_id', '=', record.id)])
+            record.count_project = len([project for project in obj_project if project.count_hours != project.diff_hours and project.diff_hours <= alert_time])
 
 
 class User(models.Model):

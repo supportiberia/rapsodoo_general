@@ -22,7 +22,7 @@
 
 {
     'name': 'Helpdesk Pro',
-    'version': '15.1.1.0.21',
+    'version': '15.1.1.0.22',
     'category': 'Helpdesk',
     'summary': """Helpdesk Pro: Support, tickets, issues, bugs.""",
     'description': """Improvement to the Helpdesk Tool: support, tickets, issues, bugs.""",
@@ -34,7 +34,7 @@
         "Edgar Naranjo <edgarnaranjof@gmail.com>",
     ],
     'support': 'devtodoo@gmail.com',
-    'depends': ['base', 'contacts', 'project', 'website', 'web', 'portal', 'hr_timesheet'],
+    'depends': ['base', 'contacts', 'project', 'website', 'web', 'portal', 'hr_timesheet', 'account'],
     'data': [
         'data/website_helpdesk.xml',
         'security/helpdesk_security.xml',
@@ -47,6 +47,7 @@
         'views/helpdesk_ticket_channel_views.xml',
         'views/helpdesk_ticket_tag_views.xml',
         'views/helpdesk_views.xml',
+        'report/ticket_clients_views.xml'
     ],
     'installable': True,
     'auto_install': False,

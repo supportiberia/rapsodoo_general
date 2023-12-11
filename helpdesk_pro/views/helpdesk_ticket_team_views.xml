@@ -53,6 +53,13 @@
                                     <field name="response_time"/> (days)
                                 </div>
                             </div>
+                            <label for="alert_time"/>
+                            <div class="w-100">
+                                <div class="o_row">
+                                    <field name="alert_time"/> (hours)
+                                </div>
+                            </div>
+
                         </group>
                     </group>
                     <notebook>

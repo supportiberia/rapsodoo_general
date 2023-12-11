@@ -35,6 +35,7 @@ class HelpdeskTeam(models.Model):
                                            domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
     response_time = fields.Integer('Response time', default=2,
                                    help='Response time while the ticket is in "In Progress" status')
+    alert_time = fields.Integer('Alert', default=10, help='Limit of hours consumed by clients')
 
     @api.depends("ticket_ids", "ticket_ids.stage_id")
     def _compute_todo_tickets(self):

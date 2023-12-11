@@ -41,3 +41,7 @@ access_helpdesk_ticket_environment_manager,helpdesk.ticket.environment.manager,m
 access_helpdesk_ticket_environment_user,helpdesk.ticket.environment.user,model_helpdesk_ticket_environment,base.group_user,1,0,0,0
 access_helpdesk_ticket_environment_portal,helpdesk.ticket.environment.portal,model_helpdesk_ticket_environment,base.group_portal,1,0,0,0
 access_helpdesk_ticket_environment_public,helpdesk.ticket.environment.public,model_helpdesk_ticket_environment,base.group_public,1,0,0,0
+access_report_ticket_client_manager,report.ticket.client.manager,model_report_ticket_client,group_helpdesk_manager,1,1,1,1
+access_report_ticket_client_user,report.ticket.client.user,model_report_ticket_client,group_helpdesk_user,1,1,1,0
+access_report_ticket_client_user_personal,report.ticket.client.user.personal,model_report_ticket_client,group_helpdesk_user_own,1,1,1,0
+access_report_ticket_client_portal,report.ticket.client.portal,model_report_ticket_client,base.group_portal,1,0,0,0

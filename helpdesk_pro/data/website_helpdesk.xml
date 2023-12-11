@@ -617,6 +617,17 @@
             <field name="numbercall">-1</field>
         </record>
 
+        <record id="ir_cron_data_helpdesk_update_alert" model="ir.cron">
+            <field name="name">Helpdesk Pro: alert by expiration</field>
+            <field name="model_id" ref="model_project_project"/>
+            <field name="type">ir.actions.server</field>
+            <field name="state">code</field>
+            <field name="code">model.update_alert_by_client()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+        </record>
+
         <!--Email template Notification In progress -->
         <record id="notification_email_progress_ticket_template" model="mail.template">
             <field name="name">Helpdesk Pro: Send Notification</field>

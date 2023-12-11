@@ -96,9 +96,6 @@
                     </t>
                 </t>
             </t>
-<!--            <div t-if="pager" class="o_portal_pager text-center">-->
-<!--                <t t-call="portal.pager"/>-->
-<!--            </div>-->
         </t>
     </template>
 
